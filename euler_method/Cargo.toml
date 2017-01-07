@@ -5,3 +5,4 @@ authors = ["Abay Bektursun <abaybektursun@gmail.com>"]
 
 [dependencies]
 dataplotlib = "0.1.3"
+prettytable-rs = "^0.6"
