@@ -1,0 +1,7 @@
+[package]
+name = "harmonic_oscillator"
+version = "0.1.0"
+authors = ["Abay Bektursun <abaybektursun@gmail.com>"]
+
+[dependencies]
+conrod = "0.48.0"
