@@ -9,6 +9,6 @@ fn bad_fib(n: u64) -> u64{
 }
 //boooooii
 fn main(){
-    let n: u64 = 40; 
+    let n: u64 = 45; 
     println!("Fib of {} = {}",n,bad_fib(n));
 }

@@ -63,7 +63,7 @@ fn main() {
     let mut text_texture_cache = piston::window::GlyphCache::new(&mut window, WIDTH, HEIGHT);
 
     // The image map describing each of our widget->image mappings (in our case, none).
-    let image_map = conrod::image::Map::new();
+    //let image_map = conrod::image::Map::new();
 
     let mut count = 0;
 
@@ -95,6 +95,6 @@ fn main() {
         thread::sleep(Duration::from_millis(period_ms as u64));
         t = t + period;
         
-        print!("\rPosition: {}",format!("{:.*}", 3, x(t, A, w, phi)));
+        println!("Position: {}",format!("{:.*}", 3, x(t, A, w, phi)));
     }
 }
