@@ -65,28 +65,16 @@ fn main() {
     mem_rand(&mut memory, MEM_SIZE);                       //
     //-----------------------------------------------------//
 
-    //Registers ------------------------------------------------------------|
-    //let mut PC:   Vec<u8> = Vec::with_capacity(12); // Program Counter      |
-    //let mut AR:   Vec<u8> = Vec::with_capacity(12); // Address Register     |
-    //let mut DR:   Vec<u8> = Vec::with_capacity(16); // Data Register        |
-    //let mut AC:   Vec<u8> = Vec::with_capacity(16); // Accumulator          |
-    //let mut IR:   Vec<u8> = Vec::with_capacity(16); // Instruction Register |
-    //let mut TR:   Vec<u8> = Vec::with_capacity(16); // Temporary Register   |
-    //let mut OUTR: Vec<u8> = Vec::with_capacity(8);  // Input Register       |
-    //let mut INPR: Vec<u8> = Vec::with_capacity(8);  // Output Register      |
-    //let mut E:    Vec<u8> = Vec::with_capacity(1);  // That Carry Thingy    |
-    //----------------------------------------------------------------------|
-    
-    let size_PC:   usize = 12;
-    let size_AR:   usize = 12;
-    let size_DR:   usize = 16;
-    let size_AC:   usize = 16;
-    let size_IR:   usize = 16;
-    let size_TR:   usize = 16;
-    let size_OUTR: usize = 8;
-    let size_INPR: usize = 8;
-    let size_E:    usize = 1;
-    
+    //Registers ----------------------------------------------------------------------------------------------|    
+    let size_PC:   usize = 12;                                                        // 12 bits              |
+    let size_AR:   usize = 12;                                                        // 12 bits              |
+    let size_DR:   usize = 16;                                                        // 16 bits              |
+    let size_AC:   usize = 16;                                                        // 16 bits              |
+    let size_IR:   usize = 16;                                                        // 16 bits              |
+    let size_TR:   usize = 16;                                                        // 16 bits              |
+    let size_OUTR: usize = 8;                                                         // 8 bits               |
+    let size_INPR: usize = 8;                                                         // 8 bits               |
+    let size_E:    usize = 1;                                                         // 1 bit                |
     let mut PC   = REG{val: 0, bits: Vec::with_capacity(size_PC),   size: size_PC};   // Program Counter      |
     let mut AR   = REG{val: 0, bits: Vec::with_capacity(size_AR),   size: size_AR};   // Address Register     |
     let mut DR   = REG{val: 0, bits: Vec::with_capacity(size_DR),   size: size_DR};   // Data Register        |
@@ -96,6 +84,7 @@ fn main() {
     let mut OUTR = REG{val: 0, bits: Vec::with_capacity(size_OUTR), size: size_OUTR}; // Input Register       |
     let mut INPR = REG{val: 0, bits: Vec::with_capacity(size_INPR), size: size_INPR}; // Output Register      |
     let mut E    = REG{val: 0, bits: Vec::with_capacity(size_E),    size: size_E};    // That Carry Thingy    |
+    //--------------------------------------------------------------------------------------------------------|
     
     let mut PC_init   = rng.gen::<u16>();
     let mut AR_init   = rng.gen::<u16>();
@@ -134,7 +123,7 @@ fn main() {
                         format!("{:X}",DR.val), 
                         format!("{:X}",PC.val), 
                         format!("{:X}",AR.val), 
-                        "...", 
+                        format!("{:X}",memory[AR.val as usize]), 
                         format!("{:X}",E.val)
                     ]);
 
