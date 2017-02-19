@@ -5,6 +5,7 @@ use prettytable::cell::Cell;
 
 use std::fmt::Write as FmtWrite;
 use std::io::Write  as IoWrite;
+use std::u16;
 
 extern crate rand;
 use rand::Rng;
@@ -39,7 +40,7 @@ impl REG {
         write!(bits_str, "{:b}", val_in);
         
         // !DEBUG TEMP!######################
-        println!("Hex Value: {:X}",val_in);
+        //println!("Hex Value: {:X}",val_in);
         // !DEBUG TEMP!######################
         
         for idx in 0..cmp::min(bits_str.len(), self.size) {
@@ -126,7 +127,7 @@ fn main() {
     let mut TR_init   = rng.gen::<u16>(); //
     let mut OUTR_init = rng.gen::<u16>(); //
     let mut INPR_init = rng.gen::<u16>(); //
-    let mut E_init    = rng.gen::<u16>(); //
+    let mut E_init    = rng.gen       (); //
     //- - - - - - - - - - - - - - - - - - //
     PC.push_val  (PC_init);               //
     AR.push_val  (AR_init);               //
@@ -136,7 +137,7 @@ fn main() {
     TR.push_val  (TR_init);               //
     OUTR.push_val(OUTR_init);             //
     INPR.push_val(INPR_init);             //
-    E.push_val   (0);                     //
+    E.push_val   (E_init);                //
     //------------------------------------//
     
     // Create a pretty table
@@ -164,6 +165,14 @@ fn main() {
     
 
     pretty.printstd();
+    
+   // !DEBUG TEMP!######################
+   //let test16_ : u16 = 0xFFFF;
+   //let test16_2: u16 = 0xFFFF;
+   //let test32_ : u32 = test16_ as u32 + test16_2 as u32;
+   //println!("test u 16: {:X}",test16_);
+   //println!("test u 32: {:X}",test32_ as u16);
+   // !DEBUG TEMP!######################
 }
 
 fn mem_rand(memory: &mut Vec<u16>, MEM_SIZE:usize){
@@ -193,7 +202,7 @@ fn bits_to_u16(bits_in: &Vec<u8>) -> u16{
 }
 
 fn mano_automata(
-    memory: &mut Vec<u16>, mut pretty: &mut Table, 
+    mut memory: &mut Vec<u16>, mut pretty: &mut Table, 
     mut IR: &mut REG, 
     mut AC: &mut REG, 
     mut DR: &mut REG, 
@@ -212,21 +221,22 @@ fn mano_automata(
                         format!("{:X}",E.val)
                     ]);
     
-    T_1(& memory, &mut pretty, &mut IR, & AC, & DR, &mut PC, &mut AR, &mut E);
+    T_1(&mut memory, &mut pretty, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
 }
 
 fn T_1(
-    memory: & Vec<u16>, mut pretty: &mut Table, 
-    IR: &mut REG, 
-    AC: & REG, 
-    DR: & REG, 
-    PC: &mut REG, 
-mut AR: &mut REG, 
-mut E:  &mut REG
+    mut memory: &mut Vec<u16>, mut pretty: &mut Table, 
+    mut IR: &mut REG, 
+    mut AC: &mut REG, 
+    mut DR: &mut REG, 
+    mut PC: &mut REG, 
+    mut AR: &mut REG, 
+    mut E:  &mut REG
     )
 {
     IR.push_val(memory[AR.val as usize]);
     let PC_local = PC.val;
+    // TODO! Handle overflow
     PC.push_val(PC_local + 1);
     
     pretty.add_row(row!["T[1]: IR ← M[AR]; PC++ ", 
@@ -239,21 +249,21 @@ mut E:  &mut REG
                         format!("{:X}",E.val)
                     ]);
     
-    T_2(& memory, &mut pretty, & IR, & AC, & DR, & PC, &mut AR, &mut E);
+    T_2(&mut memory, &mut pretty, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
 }
 
 fn T_2(
-    memory: & Vec<u16>, pretty: &mut Table, 
-    IR: &    REG, 
-    AC: &    REG, 
-    DR: &    REG, 
-    PC: &    REG, 
-    AR: &mut REG, 
-    E:  &mut REG
-    )
+    mut memory: &mut Vec<u16>, mut pretty: &mut Table, 
+    mut IR: &mut REG, 
+    mut AC: &mut REG, 
+    mut DR: &mut REG, 
+    mut PC: &mut REG, 
+    mut AR: &mut REG, 
+    mut E:  &mut REG
+)
 {
     AR.push_val(IR.val);
-     E.push_val(IR.bits[15] as u16);
+    let I = IR.bits[15];
      
     // Decode
     let action_code: u16 = bits_to_u16(& vec![IR.bits[12], IR.bits[13], IR.bits[14]] );
@@ -272,6 +282,351 @@ fn T_2(
                         format!("{:X}",memory[AR.val as usize]), 
                         format!("{:X}",E.val)
                     ]);
+                    
+    T_3(&mut memory, &mut pretty, I, action_code, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+}
+
+fn T_3(
+    mut memory: &mut Vec<u16>, mut pretty: &mut Table, I: u8, action_code: u16,
+    mut IR: &mut REG, 
+    mut AC: &mut REG, 
+    mut DR: &mut REG, 
+    mut PC: &mut REG, 
+    mut AR: &mut REG, 
+    mut E:  &mut REG
+)
+{
+    if action_code == 0x7{
+        if I == 1{
+            
+        }
+        else if I == 0 {
+            
+        }
+        else {
+            // ERROR 2F: VALUE OF I IS NON BINARY
+            panic!("💔 ERROR 2F");
+        }
+    }
+    else{
+        if I == 1{
+            let AR_local = AR.val;
+            AR.push_val(memory[AR_local as usize]);
+            pretty.add_row(row!["T[3]: AR ← M[AR] ", 
+                        format!("{:X}",IR.val),  
+                        format!("{:X}",AC.val), 
+                        format!("{:X}",DR.val), 
+                        format!("{:X}",PC.val), 
+                        format!("{:X}",AR.val), 
+                        format!("{:X}",memory[AR.val as usize]), 
+                        format!("{:X}",E.val)
+                    ]);
+           T_4_MEM(&mut memory, &mut pretty, I, action_code, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+        }
+        else if I == 0 {
+            pretty.add_row(row!["T[3]: Idle ", 
+                        format!("{:X}",IR.val),  
+                        format!("{:X}",AC.val), 
+                        format!("{:X}",DR.val), 
+                        format!("{:X}",PC.val), 
+                        format!("{:X}",AR.val), 
+                        format!("{:X}",memory[AR.val as usize]), 
+                        format!("{:X}",E.val)
+                    ]);
+            T_4_MEM(&mut memory, &mut pretty, I, action_code, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+        }
+        else {
+            // ERROR 2F: VALUE OF I IS NON BINARY
+            panic!("💔 ERROR 2F")
+        }
+    }
+}
+
+// Memory Reference
+fn T_4_MEM(
+    mut memory: &mut Vec<u16>, mut pretty: &mut Table, I: u8, action_code: u16,
+    mut IR: &mut REG, 
+    mut AC: &mut REG, 
+    mut DR: &mut REG, 
+    mut PC: &mut REG, 
+    mut AR: &mut REG, 
+    mut E:  &mut REG
+)
+{
+    match action_code {
+        0x0 => { //AND       
+            DR.push_val(memory[AR.val as usize]);
+            pretty.add_row(row!["T[4]: DR ← M[AR] ", 
+                    format!("{:X}",IR.val),  
+                    format!("{:X}",AC.val), 
+                    format!("{:X}",DR.val), 
+                    format!("{:X}",PC.val), 
+                    format!("{:X}",AR.val), 
+                    format!("{:X}",memory[AR.val as usize]), 
+                    format!("{:X}",E.val)
+                ]);
+            T_5_AND(&mut memory, &mut pretty, I, action_code, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+        },
+        0x1 => { //ADD       
+            DR.push_val(memory[AR.val as usize]);
+            pretty.add_row(row!["T[4]: DR ← M[AR] ", 
+                    format!("{:X}",IR.val),  
+                    format!("{:X}",AC.val), 
+                    format!("{:X}",DR.val), 
+                    format!("{:X}",PC.val), 
+                    format!("{:X}",AR.val), 
+                    format!("{:X}",memory[AR.val as usize]), 
+                    format!("{:X}",E.val)
+                ]);
+            T_5_ADD(&mut memory, &mut pretty, I, action_code, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+        },
+        0x2 => { //LDA       
+            DR.push_val(memory[AR.val as usize]);
+            pretty.add_row(row!["T[4]: DR ← M[AR] ", 
+                    format!("{:X}",IR.val),  
+                    format!("{:X}",AC.val), 
+                    format!("{:X}",DR.val), 
+                    format!("{:X}",PC.val), 
+                    format!("{:X}",AR.val), 
+                    format!("{:X}",memory[AR.val as usize]), 
+                    format!("{:X}",E.val)
+                ]);
+            T_5_LDA(&mut memory, &mut pretty, I, action_code, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+        },
+        0x3 => { //STA       
+            memory[AR.val as usize] = AC.val;
+            pretty.add_row(row!["T[4]: M[AR] ← AC", 
+                    format!("{:X}",IR.val),  
+                    format!("{:X}",AC.val), 
+                    format!("{:X}",DR.val), 
+                    format!("{:X}",PC.val), 
+                    format!("{:X}",AR.val), 
+                    format!("{:X}",memory[AR.val as usize]), 
+                    format!("{:X}",E.val)
+                ]);
+        },
+        0x4 => { //BUN       
+            PC.push_val(AR.val);
+            pretty.add_row(row!["T[4]: PC ← AR", 
+                    format!("{:X}",IR.val),  
+                    format!("{:X}",AC.val), 
+                    format!("{:X}",DR.val), 
+                    format!("{:X}",PC.val), 
+                    format!("{:X}",AR.val), 
+                    format!("{:X}",memory[AR.val as usize]), 
+                    format!("{:X}",E.val)
+                ]);
+        },
+        0x5 => { //BSA       
+            memory[AR.val as usize] = PC.val;
+            let AR_local = AR.val;
+            // TODO! Handle overflow
+            AR.push_val(AR_local + 1);
+            pretty.add_row(row!["T[4]: M[AR] ← PC; AR++", 
+                    format!("{:X}",IR.val),  
+                    format!("{:X}",AC.val), 
+                    format!("{:X}",DR.val), 
+                    format!("{:X}",PC.val), 
+                    format!("{:X}",AR.val), 
+                    format!("{:X}",memory[AR.val as usize]), 
+                    format!("{:X}",E.val)
+                ]);
+            T_5_BSA(&mut memory, &mut pretty, I, action_code, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+        },
+        0x6 => { //ISZ 
+            DR.push_val(memory[AR.val as usize]);
+            pretty.add_row(row!["T[4]: DR ← M[AR] ", 
+                    format!("{:X}",IR.val),  
+                    format!("{:X}",AC.val), 
+                    format!("{:X}",DR.val), 
+                    format!("{:X}",PC.val), 
+                    format!("{:X}",AR.val), 
+                    format!("{:X}",memory[AR.val as usize]), 
+                    format!("{:X}",E.val)
+                ]);
+            T_5_ISZ(&mut memory, &mut pretty, I, action_code, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+        },
+         _ =>
+            // ERROR 3F: INAPPROPRIATE T_4_MEM CALL
+            // action_code IS OUT OF RANGE (0-6)
+            panic!("💔 ERROR 3F")
+    }
 }
 
 
+// Registry Reference
+fn T_4_REG(
+    mut memory: &mut Vec<u16>, mut pretty: &mut Table, I: u8, action_code: u16,
+    mut IR: &mut REG, 
+    mut AC: &mut REG, 
+    mut DR: &mut REG, 
+    mut PC: &mut REG, 
+    mut AR: &mut REG, 
+    mut E:  &mut REG
+)
+{
+    
+}
+
+fn T_5_AND(
+    mut memory: &mut Vec<u16>, mut pretty: &mut Table, I: u8, action_code: u16,
+    mut IR: &mut REG, 
+    mut AC: &mut REG, 
+    mut DR: &mut REG, 
+    mut PC: &mut REG, 
+    mut AR: &mut REG, 
+    mut E:  &mut REG
+)
+{
+    // Bitwise AND
+    let AC_new = AC.val & DR.val;
+    AC.push_val(AC_new);
+    
+    pretty.add_row(row!["T[5]: AC ← AC ^ DR ", 
+                format!("{:X}",IR.val),  
+                format!("{:X}",AC.val), 
+                format!("{:X}",DR.val), 
+                format!("{:X}",PC.val), 
+                format!("{:X}",AR.val), 
+                format!("{:X}",memory[AR.val as usize]), 
+                format!("{:X}",E.val)
+            ]);
+}
+
+fn T_5_ADD(
+    mut memory: &mut Vec<u16>, mut pretty: &mut Table, I: u8, action_code: u16,
+    mut IR: &mut REG, 
+    mut AC: &mut REG, 
+    mut DR: &mut REG, 
+    mut PC: &mut REG, 
+    mut AR: &mut REG, 
+    mut E:  &mut REG 
+)
+{
+    let AC_new: u32 = AC.val as u32 + DR.val as u32 ;
+    
+    // Make E = 1 in case of overflow
+    if AC_new > <u16>::max_value() as u32 {
+        E.push_val(1);
+    }
+    else { E.push_val(0); }
+    
+    // Cast below trims out the left 4 bits
+    AC.push_val(AC_new as u16);
+    
+    pretty.add_row(row!["T[5]: AC ← AC + DR ", 
+                format!("{:X}",IR.val),  
+                format!("{:X}",AC.val), 
+                format!("{:X}",DR.val), 
+                format!("{:X}",PC.val), 
+                format!("{:X}",AR.val), 
+                format!("{:X}",memory[AR.val as usize]), 
+                format!("{:X}",E.val)
+            ]);
+}
+
+fn T_5_LDA(
+    mut memory: &mut Vec<u16>, mut pretty: &mut Table, I: u8, action_code: u16,
+    mut IR: &mut REG, 
+    mut AC: &mut REG, 
+    mut DR: &mut REG, 
+    mut PC: &mut REG, 
+    mut AR: &mut REG, 
+    mut E:  &mut REG 
+)
+{
+    AC.push_val(DR.val);
+    
+    pretty.add_row(row!["T[5]: AC ← DR ", 
+                format!("{:X}",IR.val),  
+                format!("{:X}",AC.val), 
+                format!("{:X}",DR.val), 
+                format!("{:X}",PC.val), 
+                format!("{:X}",AR.val), 
+                format!("{:X}",memory[AR.val as usize]), 
+                format!("{:X}",E.val)
+            ]);
+}
+
+fn T_5_BSA(
+    mut memory: &mut Vec<u16>, mut pretty: &mut Table, I: u8, action_code: u16,
+    mut IR: &mut REG, 
+    mut AC: &mut REG, 
+    mut DR: &mut REG, 
+    mut PC: &mut REG, 
+    mut AR: &mut REG, 
+    mut E:  &mut REG 
+)
+{
+    PC.push_val(AR.val);
+    
+    pretty.add_row(row!["T[5]: PC ← AR ", 
+                format!("{:X}",IR.val),  
+                format!("{:X}",AC.val), 
+                format!("{:X}",DR.val), 
+                format!("{:X}",PC.val), 
+                format!("{:X}",AR.val), 
+                format!("{:X}",memory[AR.val as usize]), 
+                format!("{:X}",E.val)
+            ]);
+}
+
+fn T_5_ISZ(
+    mut memory: &mut Vec<u16>, mut pretty: &mut Table, I: u8, action_code: u16,
+    mut IR: &mut REG, 
+    mut AC: &mut REG, 
+    mut DR: &mut REG, 
+    mut PC: &mut REG, 
+    mut AR: &mut REG, 
+    mut E:  &mut REG 
+)
+{
+    let DR_local = DR.val;
+    // TODO! Handle overflow
+    DR.push_val(DR_local + 1);
+    
+    pretty.add_row(row!["T[5]: DR++ ", 
+                format!("{:X}",IR.val),  
+                format!("{:X}",AC.val), 
+                format!("{:X}",DR.val), 
+                format!("{:X}",PC.val), 
+                format!("{:X}",AR.val), 
+                format!("{:X}",memory[AR.val as usize]), 
+                format!("{:X}",E.val)
+            ]);
+    T_6_ISZ(&mut memory, &mut pretty, I, action_code, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+}
+
+
+fn T_6_ISZ(
+    mut memory: &mut Vec<u16>, mut pretty: &mut Table, I: u8, action_code: u16,
+    mut IR: &mut REG, 
+    mut AC: &mut REG, 
+    mut DR: &mut REG, 
+    mut PC: &mut REG, 
+    mut AR: &mut REG, 
+    mut E:  &mut REG 
+)
+{
+    let mut step_str = "";
+    if DR.val == 0 {
+        let PC_local = PC.val;
+        // TODO! Handle overflow
+        PC.push_val(PC_local + 1);
+        step_str = "T[6]: PC++ (DR IS 0)";
+    }
+    else{
+        memory[AR.val as usize] = DR.val;
+        step_str = "T[6]: M[AR] ← DR ";
+    }
+    
+    pretty.add_row(row![step_str, 
+                format!("{:X}",IR.val),  
+                format!("{:X}",AC.val), 
+                format!("{:X}",DR.val), 
+                format!("{:X}",PC.val), 
+                format!("{:X}",AR.val), 
+                format!("{:X}",memory[AR.val as usize]), 
+                format!("{:X}",E.val)
+            ]);
+}
