@@ -1,3 +1,5 @@
+// Repository: https://github.com/abaybektursun/rust_collection/tree/master/mano_machine_emulator
+// Short: https://goo.gl/b8kJ8f
 #[macro_use] extern crate prettytable;
 use prettytable::Table;
 use prettytable::row::Row;
@@ -20,10 +22,10 @@ use std::cmp;
 struct REG {
     val:  u16,     // Value stored in the register
     bits: Vec<u8>, // Binary representation of the value
-    size: usize    // Length of the binary represntation
+    size: usize    // Register size - Length of the binary represntation
 }
 impl REG {
-    
+    //First call needs to be init
     fn push_val(&mut self,val_in: u16) {
         if self.bits.len() == 0{
             for x in 0..self.size{
@@ -56,9 +58,9 @@ impl REG {
         //}
         // !DEBUG TEMP!######################
     }
-    
+    //First call needs to be init
     fn push_bits(&mut self,  bits_in: &Vec<u8>) {
-    
+        
         if self.bits.len() == 0{
             for x in 0..self.size{
                 self.bits.push(0);
@@ -211,6 +213,7 @@ fn mano_automata(
     mut AR: &mut REG, 
     mut E:  &mut REG
 ){
+    epoch -= 1;     
     if epoch > 0 {
         AR.push_bits(& PC.bits);
         pretty.add_row(row!["T[0]: AR ← PC ", 
@@ -225,7 +228,7 @@ fn mano_automata(
                         
         T_1(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
     }
-    epoch -= 1;
+    
 }
 
 fn T_1(
@@ -287,10 +290,10 @@ fn T_2(
                         format!("{:X}",E.val)
                     ]);
                     
-    T_3(&mut memory, &mut pretty, epoch, I, action_code, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+    T_3_MEM(&mut memory, &mut pretty, epoch, I, action_code, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
 }
 
-fn T_3(
+fn T_3_MEM(
     mut memory: &mut Vec<u16>, mut pretty: &mut Table, mut epoch: u8, I: u8, action_code: u16, 
     mut IR: &mut REG, 
     mut AC: &mut REG, 
@@ -305,7 +308,7 @@ fn T_3(
             
         }
         else if I == 0 {
-            
+            T_3_REG(&mut memory, &mut pretty, epoch, I, action_code, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
         }
         else {
             // ERROR 2F: VALUE OF I IS NON BINARY
@@ -459,9 +462,21 @@ fn T_4_MEM(
     }
 }
 
+// Registry Reference
+fn T_3_IO(
+    mut memory: &mut Vec<u16>, mut pretty: &mut Table, mut epoch: u8, I: u8, action_code: u16, 
+    mut IR: &mut REG, 
+    mut AC: &mut REG, 
+    mut DR: &mut REG, 
+    mut PC: &mut REG, 
+    mut AR: &mut REG, 
+    mut E:  &mut REG
+)
+{
+}
 
 // Registry Reference
-fn T_4_REG(
+fn T_3_REG(
     mut memory: &mut Vec<u16>, mut pretty: &mut Table, mut epoch: u8, I: u8, action_code: u16,
     mut IR: &mut REG, 
     mut AC: &mut REG, 
@@ -471,7 +486,112 @@ fn T_4_REG(
     mut E:  &mut REG
 )
 {
-    
+    match IR.val {
+        0x7800 => {
+            AC.push_val(0);
+            pretty.add_row(row!["T[3]: Clear AC ", 
+                format!("{:X}",IR.val),  
+                format!("{:X}",AC.val), 
+                format!("{:X}",DR.val), 
+                format!("{:X}",PC.val), 
+                format!("{:X}",AR.val), 
+                format!("{:X}",memory[AR.val as usize]), 
+                format!("{:X}",E.val)
+            ]);
+        },
+        0x7400 => {
+            E.push_val(0);
+            pretty.add_row(row!["T[3]: Clear E ", 
+                format!("{:X}",IR.val),  
+                format!("{:X}",AC.val), 
+                format!("{:X}",DR.val), 
+                format!("{:X}",PC.val), 
+                format!("{:X}",AR.val), 
+                format!("{:X}",memory[AR.val as usize]), 
+                format!("{:X}",E.val)
+            ]);
+
+        },
+        0x7200 => {
+            let AC_comp = !AC.val;
+            AC.push_val(AC_comp);
+            pretty.add_row(row!["T[3]: Complement AC ", 
+                format!("{:X}",IR.val),  
+                format!("{:X}",AC.val), 
+                format!("{:X}",DR.val), 
+                format!("{:X}",PC.val), 
+                format!("{:X}",AR.val), 
+                format!("{:X}",memory[AR.val as usize]), 
+                format!("{:X}",E.val)
+            ]);
+        },
+        0x7100 => {
+            let E_comp = !E.val;
+            E.push_val(E_comp);
+            pretty.add_row(row!["T[3]: Complement E ", 
+                format!("{:X}",IR.val),  
+                format!("{:X}",AC.val), 
+                format!("{:X}",DR.val), 
+                format!("{:X}",PC.val), 
+                format!("{:X}",AR.val), 
+                format!("{:X}",memory[AR.val as usize]), 
+                format!("{:X}",E.val)
+            ]);
+        },
+        0x7080 => {
+            E.push_val(AC.bits[15] as u16);
+            let AC_CIR = AC.val.rotate_right(1);
+            AC.push_val(AC_CIR);
+            pretty.add_row(row!["T[3]: Curricular Shift Right AC", 
+                format!("{:X}",IR.val),  
+                format!("{:X}",AC.val), 
+                format!("{:X}",DR.val), 
+                format!("{:X}",PC.val), 
+                format!("{:X}",AR.val), 
+                format!("{:X}",memory[AR.val as usize]), 
+                format!("{:X}",E.val)
+            ]);
+        },
+        0x7040 => {
+            E.push_val(AC.bits[0] as u16);
+            let AC_CIL = AC.val.rotate_left(1);
+            AC.push_val(AC_CIL);
+            pretty.add_row(row!["T[3]: Curricular Shift Left AC", 
+                format!("{:X}",IR.val),  
+                format!("{:X}",AC.val), 
+                format!("{:X}",DR.val), 
+                format!("{:X}",PC.val), 
+                format!("{:X}",AR.val), 
+                format!("{:X}",memory[AR.val as usize]), 
+                format!("{:X}",E.val)
+            ]);
+        },
+        0x7020 => {
+            let AC_inc = AC.val + 1;
+            AC.push_val(AC_inc);
+            pretty.add_row(row!["T[3]: AC++ ", 
+                format!("{:X}",IR.val),  
+                format!("{:X}",AC.val), 
+                format!("{:X}",DR.val), 
+                format!("{:X}",PC.val), 
+                format!("{:X}",AR.val), 
+                format!("{:X}",memory[AR.val as usize]), 
+                format!("{:X}",E.val)
+            ]);
+        },
+        0x7010 => {
+            
+        },
+        0x7008 => {
+        },
+        0x7004 => {
+        },
+        0x7002 => {
+        },
+        0x7001 => {
+        },
+        _ => print!("?") // What to do ?
+    }
 }
 
 fn T_5_AND(
