@@ -120,27 +120,27 @@ fn main() {
     let mut E    = REG{val: 0, bits: Vec::with_capacity(size_E),    size: size_E};    // That Carry Thingy    |
     //--------------------------------------------------------------------------------------------------------|
     
-    // Initialize registers randomly -----//
-    let mut PC_init   = rng.gen::<u16>(); //
-    let mut AR_init   = rng.gen::<u16>(); //
-    let mut DR_init   = rng.gen::<u16>(); //
-    let mut AC_init   = rng.gen::<u16>(); //
-    let mut IR_init   = rng.gen::<u16>(); //
-    let mut TR_init   = rng.gen::<u16>(); //
-    let mut OUTR_init = rng.gen::<u16>(); //
-    let mut INPR_init = rng.gen::<u16>(); //
-    let mut E_init    = rng.gen       (); //
-    //- - - - - - - - - - - - - - - - - - //
-    PC.push_val  (PC_init);               //
-    AR.push_val  (AR_init);               //
-    DR.push_val  (DR_init);               //
-    AC.push_val  (AC_init);               //
-    IR.push_val  (IR_init);               //
-    TR.push_val  (TR_init);               //
-    OUTR.push_val(OUTR_init);             //
-    INPR.push_val(INPR_init);             //
-    E.push_val   (E_init);                //
-    //------------------------------------//
+    // Initialize registers randomly --------------//
+    let mut PC_init   = rng.gen::<u16>() % 0xFF00; //
+    let mut AR_init   = rng.gen::<u16>() % 0xFF00; //
+    let mut DR_init   = rng.gen::<u16>() % 0xFF00; //
+    let mut AC_init   = rng.gen::<u16>() % 0xFF00; //
+    let mut IR_init   = rng.gen::<u16>() % 0xFF00; //
+    let mut TR_init   = rng.gen::<u16>() % 0xFF00; //
+    let mut OUTR_init = rng.gen::<u16>() % 0xFF00; //
+    let mut INPR_init = rng.gen::<u16>() % 0xFF00; //
+    let mut E_init    = rng.gen       ();          //
+    //- - - - - - - - - - - - - - - - - -----------//
+    PC.push_val  (PC_init);                        //
+    AR.push_val  (AR_init);                        //
+    DR.push_val  (DR_init);                        //
+    AC.push_val  (AC_init);                        //
+    IR.push_val  (IR_init);                        //
+    TR.push_val  (TR_init);                        //
+    OUTR.push_val(OUTR_init);                      //
+    INPR.push_val(INPR_init);                      //
+    E.push_val   (E_init);                         //
+    //---------------------------------------------//
     
     // Create a pretty table
     let mut pretty = Table::new();
@@ -462,7 +462,7 @@ fn T_4_MEM(
     }
 }
 
-// Registry Reference
+// I/O Reference
 fn T_3_IO(
     mut memory: &mut Vec<u16>, mut pretty: &mut Table, mut epoch: u8, I: u8, action_code: u16, 
     mut IR: &mut REG, 
@@ -498,6 +498,7 @@ fn T_3_REG(
                 format!("{:X}",memory[AR.val as usize]), 
                 format!("{:X}",E.val)
             ]);
+            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
         },
         0x7400 => {
             E.push_val(0);
@@ -510,7 +511,7 @@ fn T_3_REG(
                 format!("{:X}",memory[AR.val as usize]), 
                 format!("{:X}",E.val)
             ]);
-
+            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
         },
         0x7200 => {
             let AC_comp = !AC.val;
@@ -524,6 +525,7 @@ fn T_3_REG(
                 format!("{:X}",memory[AR.val as usize]), 
                 format!("{:X}",E.val)
             ]);
+            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
         },
         0x7100 => {
             let E_comp = !E.val;
@@ -537,6 +539,7 @@ fn T_3_REG(
                 format!("{:X}",memory[AR.val as usize]), 
                 format!("{:X}",E.val)
             ]);
+            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
         },
         0x7080 => {
             E.push_val(AC.bits[15] as u16);
@@ -551,6 +554,7 @@ fn T_3_REG(
                 format!("{:X}",memory[AR.val as usize]), 
                 format!("{:X}",E.val)
             ]);
+            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
         },
         0x7040 => {
             E.push_val(AC.bits[0] as u16);
@@ -565,6 +569,7 @@ fn T_3_REG(
                 format!("{:X}",memory[AR.val as usize]), 
                 format!("{:X}",E.val)
             ]);
+            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
         },
         0x7020 => {
             let AC_inc = AC.val + 1;
@@ -578,17 +583,82 @@ fn T_3_REG(
                 format!("{:X}",memory[AR.val as usize]), 
                 format!("{:X}",E.val)
             ]);
+            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
         },
         0x7010 => {
-            
+            if AC.bits[0] == 0{
+                let PC_inc = PC.val + 1;
+                PC.push_val(PC_inc);
+                pretty.add_row(row!["T[3]: PC++ ", 
+                    format!("{:X}",IR.val),  
+                    format!("{:X}",AC.val), 
+                    format!("{:X}",DR.val), 
+                    format!("{:X}",PC.val), 
+                    format!("{:X}",AR.val), 
+                    format!("{:X}",memory[AR.val as usize]), 
+                    format!("{:X}",E.val)
+                ]);
+            }
+            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
         },
         0x7008 => {
+            if AC.bits[0] == 1 && AC.val != 0{
+                let PC_inc = PC.val + 1;
+                PC.push_val(PC_inc);
+                pretty.add_row(row!["T[3]: PC++ ", 
+                    format!("{:X}",IR.val),  
+                    format!("{:X}",AC.val), 
+                    format!("{:X}",DR.val), 
+                    format!("{:X}",PC.val), 
+                    format!("{:X}",AR.val), 
+                    format!("{:X}",memory[AR.val as usize]), 
+                    format!("{:X}",E.val)
+                ]);
+            }
+            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
         },
         0x7004 => {
+            if AC.val == 0{
+                let PC_inc = PC.val + 1;
+                PC.push_val(PC_inc);
+                pretty.add_row(row!["T[3]: PC++ ", 
+                    format!("{:X}",IR.val),  
+                    format!("{:X}",AC.val), 
+                    format!("{:X}",DR.val), 
+                    format!("{:X}",PC.val), 
+                    format!("{:X}",AR.val), 
+                    format!("{:X}",memory[AR.val as usize]), 
+                    format!("{:X}",E.val)
+                ]);
+            }
+            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
         },
         0x7002 => {
+            if E.val == 0{
+                let PC_inc = PC.val + 1;
+                PC.push_val(PC_inc);
+                pretty.add_row(row!["T[3]: PC++ ", 
+                    format!("{:X}",IR.val),  
+                    format!("{:X}",AC.val), 
+                    format!("{:X}",DR.val), 
+                    format!("{:X}",PC.val), 
+                    format!("{:X}",AR.val), 
+                    format!("{:X}",memory[AR.val as usize]), 
+                    format!("{:X}",E.val)
+                ]);
+            }
+            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
         },
         0x7001 => {
+            pretty.add_row(row!["Shutting Down! ", 
+                    format!("----"),  
+                    format!("----"), 
+                    format!("----"), 
+                    format!("----"), 
+                    format!("----"), 
+                    format!("----"), 
+                    format!("----")
+                ]);
         },
         _ => print!("?") // What to do ?
     }
