@@ -163,7 +163,7 @@ fn main() {
                         format!("{:X}",E.val)
                     ]);
     let mut epoch: u8 = 5;
-    mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+    mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
     
 
     pretty.printstd();
@@ -211,7 +211,9 @@ fn mano_automata(
     mut DR: &mut REG, 
     mut PC: &mut REG, 
     mut AR: &mut REG, 
-    mut E:  &mut REG
+    mut E:  &mut REG, mut INPR: &mut REG,
+                      mut OUTR: &mut REG
+    
 ){
     epoch -= 1;     
     if epoch > 0 {
@@ -226,7 +228,7 @@ fn mano_automata(
                             format!("{:X}",E.val)
                         ]);
                         
-        T_1(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+        T_1(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
     }
     
 }
@@ -238,7 +240,8 @@ fn T_1(
     mut DR: &mut REG, 
     mut PC: &mut REG, 
     mut AR: &mut REG, 
-    mut E:  &mut REG
+    mut E:  &mut REG, mut INPR: &mut REG,
+                      mut OUTR: &mut REG
     )
 {
     IR.push_val(memory[AR.val as usize]);
@@ -256,7 +259,7 @@ fn T_1(
                         format!("{:X}",E.val)
                     ]);
     
-    T_2(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+    T_2(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
 }
 
 fn T_2(
@@ -266,7 +269,8 @@ fn T_2(
     mut DR: &mut REG, 
     mut PC: &mut REG, 
     mut AR: &mut REG, 
-    mut E:  &mut REG
+    mut E:  &mut REG, mut INPR: &mut REG,
+                      mut OUTR: &mut REG
 )
 {
     AR.push_val(IR.val);
@@ -290,7 +294,7 @@ fn T_2(
                         format!("{:X}",E.val)
                     ]);
                     
-    T_3_MEM(&mut memory, &mut pretty, epoch, I, action_code, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+    T_3_MEM(&mut memory, &mut pretty, epoch, I, action_code, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
 }
 
 fn T_3_MEM(
@@ -300,15 +304,16 @@ fn T_3_MEM(
     mut DR: &mut REG, 
     mut PC: &mut REG, 
     mut AR: &mut REG, 
-    mut E:  &mut REG
+    mut E:  &mut REG, mut INPR: &mut REG,
+                      mut OUTR: &mut REG
 )
 {
     if action_code == 0x7{
         if I == 1{
-            
+            T_3_IO(&mut memory, &mut pretty, epoch, I, action_code, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
         }
         else if I == 0 {
-            T_3_REG(&mut memory, &mut pretty, epoch, I, action_code, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+            T_3_REG(&mut memory, &mut pretty, epoch, I, action_code, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
         }
         else {
             // ERROR 2F: VALUE OF I IS NON BINARY
@@ -328,7 +333,7 @@ fn T_3_MEM(
                         format!("{:X}",memory[AR.val as usize]), 
                         format!("{:X}",E.val)
                     ]);
-           T_4_MEM(&mut memory, &mut pretty, epoch, I, action_code, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+           T_4_MEM(&mut memory, &mut pretty, epoch, I, action_code, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
         }
         else if I == 0 {
             pretty.add_row(row!["T[3]: Idle ", 
@@ -340,7 +345,7 @@ fn T_3_MEM(
                         format!("{:X}",memory[AR.val as usize]), 
                         format!("{:X}",E.val)
                     ]);
-            T_4_MEM(&mut memory, &mut pretty, epoch, I, action_code, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+            T_4_MEM(&mut memory, &mut pretty, epoch, I, action_code, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
         }
         else {
             // ERROR 2F: VALUE OF I IS NON BINARY
@@ -357,7 +362,8 @@ fn T_4_MEM(
     mut DR: &mut REG, 
     mut PC: &mut REG, 
     mut AR: &mut REG, 
-    mut E:  &mut REG
+    mut E:  &mut REG, mut INPR: &mut REG,
+                      mut OUTR: &mut REG
 )
 {
     match action_code {
@@ -372,7 +378,7 @@ fn T_4_MEM(
                     format!("{:X}",memory[AR.val as usize]), 
                     format!("{:X}",E.val)
                 ]);
-            T_5_AND(&mut memory, &mut pretty, epoch, I, action_code, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+            T_5_AND(&mut memory, &mut pretty, epoch, I, action_code, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
         },
         0x1 => { //ADD       
             DR.push_val(memory[AR.val as usize]);
@@ -385,7 +391,7 @@ fn T_4_MEM(
                     format!("{:X}",memory[AR.val as usize]), 
                     format!("{:X}",E.val)
                 ]);
-            T_5_ADD(&mut memory, &mut pretty, epoch, I, action_code, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+            T_5_ADD(&mut memory, &mut pretty, epoch, I, action_code, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
         },
         0x2 => { //LDA       
             DR.push_val(memory[AR.val as usize]);
@@ -398,7 +404,7 @@ fn T_4_MEM(
                     format!("{:X}",memory[AR.val as usize]), 
                     format!("{:X}",E.val)
                 ]);
-            T_5_LDA(&mut memory, &mut pretty, epoch, I, action_code, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+            T_5_LDA(&mut memory, &mut pretty, epoch, I, action_code, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
         },
         0x3 => { //STA       
             memory[AR.val as usize] = AC.val;
@@ -411,7 +417,7 @@ fn T_4_MEM(
                     format!("{:X}",memory[AR.val as usize]), 
                     format!("{:X}",E.val)
                 ]);
-            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
         },
         0x4 => { //BUN       
             PC.push_val(AR.val);
@@ -424,7 +430,7 @@ fn T_4_MEM(
                     format!("{:X}",memory[AR.val as usize]), 
                     format!("{:X}",E.val)
                 ]);
-            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
         },
         0x5 => { //BSA       
             memory[AR.val as usize] = PC.val;
@@ -440,7 +446,7 @@ fn T_4_MEM(
                     format!("{:X}",memory[AR.val as usize]), 
                     format!("{:X}",E.val)
                 ]);
-            T_5_BSA(&mut memory, &mut pretty, epoch, I, action_code, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+            T_5_BSA(&mut memory, &mut pretty, epoch, I, action_code, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
         },
         0x6 => { //ISZ 
             DR.push_val(memory[AR.val as usize]);
@@ -453,7 +459,7 @@ fn T_4_MEM(
                     format!("{:X}",memory[AR.val as usize]), 
                     format!("{:X}",E.val)
                 ]);
-            T_5_ISZ(&mut memory, &mut pretty, epoch, I, action_code, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+            T_5_ISZ(&mut memory, &mut pretty, epoch, I, action_code, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
         },
          _ =>
             // ERROR 3F: INAPPROPRIATE T_4_MEM CALL
@@ -470,10 +476,97 @@ fn T_3_IO(
     mut DR: &mut REG, 
     mut PC: &mut REG, 
     mut AR: &mut REG, 
-    mut E:  &mut REG
+    mut E:  &mut REG, mut INPR: &mut REG,
+                      mut OUTR: &mut REG
 )
 {
-    
+    match IR.val {
+        0xF800 => {
+            AC.push_val(INPR.val);
+            pretty.add_row(row!["T[3]: Input to AC ", 
+                format!("{:X}",IR.val),  
+                format!("{:X}",AC.val), 
+                format!("{:X}",DR.val), 
+                format!("{:X}",PC.val), 
+                format!("{:X}",AR.val), 
+                format!("{:X}",memory[AR.val as usize]), 
+                format!("{:X}",E.val)
+            ]);
+            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
+        },
+        0xF400 => {
+            OUTR.push_val(AC.val)
+            pretty.add_row(row!["T[3]: Output From AC ", 
+                format!("{:X}",IR.val),  
+                format!("{:X}",AC.val), 
+                format!("{:X}",DR.val), 
+                format!("{:X}",PC.val), 
+                format!("{:X}",AR.val), 
+                format!("{:X}",memory[AR.val as usize]), 
+                format!("{:X}",E.val)
+            ]);
+            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
+        },
+        0xF200 => {
+            //let AC_comp = !AC.val;
+            //AC.push_val(AC_comp);
+            pretty.add_row(row!["T[3]: Skip on input flag ", 
+                format!("{:X}",IR.val),  
+                format!("{:X}",AC.val), 
+                format!("{:X}",DR.val), 
+                format!("{:X}",PC.val), 
+                format!("{:X}",AR.val), 
+                format!("{:X}",memory[AR.val as usize]), 
+                format!("{:X}",E.val)
+            ]);
+            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
+        },
+        0xF100 => {
+            //let E_comp = !E.val;
+            //E.push_val(E_comp);
+            pretty.add_row(row!["T[3]: Skip on output flag ", 
+                format!("{:X}",IR.val),  
+                format!("{:X}",AC.val), 
+                format!("{:X}",DR.val), 
+                format!("{:X}",PC.val), 
+                format!("{:X}",AR.val), 
+                format!("{:X}",memory[AR.val as usize]), 
+                format!("{:X}",E.val)
+            ]);
+            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
+        },
+        0xF080 => {
+            //E.push_val(AC.bits[15] as u16);
+            //let AC_CIR = AC.val.rotate_right(1);
+            //AC.push_val(AC_CIR);
+            pretty.add_row(row!["T[3]: Interrupt on", 
+                format!("{:X}",IR.val),  
+                format!("{:X}",AC.val), 
+                format!("{:X}",DR.val), 
+                format!("{:X}",PC.val), 
+                format!("{:X}",AR.val), 
+                format!("{:X}",memory[AR.val as usize]), 
+                format!("{:X}",E.val)
+            ]);
+            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
+        },
+        0xF040 => {
+            //E.push_val(AC.bits[0] as u16);
+            //let AC_CIL = AC.val.rotate_left(1);
+            //AC.push_val(AC_CIL);
+            pretty.add_row(row!["T[3]: Interrupt off", 
+                format!("{:X}",IR.val), 
+                format!("{:X}",AC.val), 
+                format!("{:X}",DR.val), 
+                format!("{:X}",PC.val), 
+                format!("{:X}",AR.val), 
+                format!("{:X}",memory[AR.val as usize]), 
+                format!("{:X}",E.val)
+            ]);
+            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
+        },
+        _ => println!("Unknown Code") // What to do ?
+    }
 }
 
 // Registry Reference
@@ -484,7 +577,8 @@ fn T_3_REG(
     mut DR: &mut REG, 
     mut PC: &mut REG, 
     mut AR: &mut REG, 
-    mut E:  &mut REG
+    mut E:  &mut REG, mut INPR: &mut REG,
+                      mut OUTR: &mut REG
 )
 {
     match IR.val {
@@ -499,7 +593,7 @@ fn T_3_REG(
                 format!("{:X}",memory[AR.val as usize]), 
                 format!("{:X}",E.val)
             ]);
-            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
         },
         0x7400 => {
             E.push_val(0);
@@ -512,7 +606,7 @@ fn T_3_REG(
                 format!("{:X}",memory[AR.val as usize]), 
                 format!("{:X}",E.val)
             ]);
-            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
         },
         0x7200 => {
             let AC_comp = !AC.val;
@@ -526,7 +620,7 @@ fn T_3_REG(
                 format!("{:X}",memory[AR.val as usize]), 
                 format!("{:X}",E.val)
             ]);
-            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
         },
         0x7100 => {
             let E_comp = !E.val;
@@ -540,7 +634,7 @@ fn T_3_REG(
                 format!("{:X}",memory[AR.val as usize]), 
                 format!("{:X}",E.val)
             ]);
-            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
         },
         0x7080 => {
             E.push_val(AC.bits[15] as u16);
@@ -555,7 +649,7 @@ fn T_3_REG(
                 format!("{:X}",memory[AR.val as usize]), 
                 format!("{:X}",E.val)
             ]);
-            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
         },
         0x7040 => {
             E.push_val(AC.bits[0] as u16);
@@ -570,7 +664,7 @@ fn T_3_REG(
                 format!("{:X}",memory[AR.val as usize]), 
                 format!("{:X}",E.val)
             ]);
-            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
         },
         0x7020 => {
             let AC_inc = AC.val + 1;
@@ -584,7 +678,7 @@ fn T_3_REG(
                 format!("{:X}",memory[AR.val as usize]), 
                 format!("{:X}",E.val)
             ]);
-            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
         },
         0x7010 => {
             if AC.bits[0] == 0{
@@ -600,7 +694,7 @@ fn T_3_REG(
                     format!("{:X}",E.val)
                 ]);
             }
-            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
         },
         0x7008 => {
             if AC.bits[0] == 1 && AC.val != 0{
@@ -616,7 +710,7 @@ fn T_3_REG(
                     format!("{:X}",E.val)
                 ]);
             }
-            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
         },
         0x7004 => {
             if AC.val == 0{
@@ -632,7 +726,7 @@ fn T_3_REG(
                     format!("{:X}",E.val)
                 ]);
             }
-            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
         },
         0x7002 => {
             if E.val == 0{
@@ -648,7 +742,7 @@ fn T_3_REG(
                     format!("{:X}",E.val)
                 ]);
             }
-            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+            mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
         },
         0x7001 => {
             pretty.add_row(row!["Shutting Down! ", 
@@ -661,7 +755,7 @@ fn T_3_REG(
                     format!("----")
                 ]);
         },
-        _ => print!("?") // What to do ?
+        _ => println!("Unknown Code") // What to do ?
     }
 }
 
@@ -672,7 +766,8 @@ fn T_5_AND(
     mut DR: &mut REG, 
     mut PC: &mut REG, 
     mut AR: &mut REG, 
-    mut E:  &mut REG
+    mut E:  &mut REG, mut INPR: &mut REG,
+                      mut OUTR: &mut REG
 )
 {
     // Bitwise AND
@@ -689,7 +784,7 @@ fn T_5_AND(
                 format!("{:X}",E.val)
             ]);
             
-    mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+    mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
     
 }
 
@@ -700,7 +795,8 @@ fn T_5_ADD(
     mut DR: &mut REG, 
     mut PC: &mut REG, 
     mut AR: &mut REG, 
-    mut E:  &mut REG 
+    mut E:  &mut REG, mut INPR: &mut REG,
+                      mut OUTR: &mut REG
 )
 {
     let AC_new: u32 = AC.val as u32 + DR.val as u32 ;
@@ -723,7 +819,7 @@ fn T_5_ADD(
                 format!("{:X}",memory[AR.val as usize]), 
                 format!("{:X}",E.val)
             ]);
-    mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+    mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
 }
 
 fn T_5_LDA(
@@ -733,7 +829,8 @@ fn T_5_LDA(
     mut DR: &mut REG, 
     mut PC: &mut REG, 
     mut AR: &mut REG, 
-    mut E:  &mut REG 
+    mut E:  &mut REG, mut INPR: &mut REG,
+                      mut OUTR: &mut REG
 )
 {
     AC.push_val(DR.val);
@@ -747,7 +844,7 @@ fn T_5_LDA(
                 format!("{:X}",memory[AR.val as usize]), 
                 format!("{:X}",E.val)
             ]);
-    mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+    mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
 }
 
 fn T_5_BSA(
@@ -757,7 +854,8 @@ fn T_5_BSA(
     mut DR: &mut REG, 
     mut PC: &mut REG, 
     mut AR: &mut REG, 
-    mut E:  &mut REG 
+    mut E:  &mut REG, mut INPR: &mut REG,
+                      mut OUTR: &mut REG
 )
 {
     PC.push_val(AR.val);
@@ -771,7 +869,7 @@ fn T_5_BSA(
                 format!("{:X}",memory[AR.val as usize]), 
                 format!("{:X}",E.val)
             ]);
-    mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+    mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
 }
 
 fn T_5_ISZ(
@@ -781,7 +879,8 @@ fn T_5_ISZ(
     mut DR: &mut REG, 
     mut PC: &mut REG, 
     mut AR: &mut REG, 
-    mut E:  &mut REG 
+    mut E:  &mut REG, mut INPR: &mut REG,
+                      mut OUTR: &mut REG
 )
 {
     let DR_local = DR.val;
@@ -797,7 +896,7 @@ fn T_5_ISZ(
                 format!("{:X}",memory[AR.val as usize]), 
                 format!("{:X}",E.val)
             ]);
-    T_6_ISZ(&mut memory, &mut pretty, epoch, I, action_code, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+    T_6_ISZ(&mut memory, &mut pretty, epoch, I, action_code, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
 }
 
 
@@ -808,7 +907,8 @@ fn T_6_ISZ(
     mut DR: &mut REG, 
     mut PC: &mut REG, 
     mut AR: &mut REG, 
-    mut E:  &mut REG 
+    mut E:  &mut REG, mut INPR: &mut REG,
+                      mut OUTR: &mut REG
 )
 {
     let mut step_str = "";
@@ -832,5 +932,5 @@ fn T_6_ISZ(
                 format!("{:X}",memory[AR.val as usize]), 
                 format!("{:X}",E.val)
             ]);
-    mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E);
+    mano_automata(&mut memory, &mut pretty, epoch, &mut IR, &mut AC, &mut DR, &mut PC, &mut AR, &mut E, &mut OUTR, &mut INPR);
 }
