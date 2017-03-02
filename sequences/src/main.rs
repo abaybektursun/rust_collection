@@ -12,3 +12,7 @@ fn main(){
     let n: u64 = 45; 
     println!("Fib of {} = {}",n,bad_fib(n));
 }
+
+fn taylor_approx(n: u64,a: u64) -> u64{
+    return 0;
+}
