@@ -298,10 +298,15 @@ fn T_2(
 )
 {
     AR.push_val(IR.val);
-    let I = IR.bits[15];
+    let I = IR.bits[0];
+    
+    // !DEBUG TEMP!##################################################
+    println!("IR: {:?}", IR.bits);
+    println!("I : {:?}", I);
+    // !DEBUG TEMP!##################################################
      
     // Decode
-    let action_code: u16 = bits_to_u16(& vec![IR.bits[12], IR.bits[13], IR.bits[14]] );
+    let action_code: u16 = bits_to_u16(& vec![IR.bits[1], IR.bits[2], IR.bits[3]] );
     
     // !DEBUG TEMP!##################################################
     //println!("Elems:     {}{}{}", IR.bits[12], IR.bits[13], IR.bits[14]);
