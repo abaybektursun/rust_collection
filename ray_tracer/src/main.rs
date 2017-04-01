@@ -3,121 +3,193 @@ extern crate glium;
 
 use glium::Surface;
 
-#[derive(Copy, Clone)]
-struct RGB_ {
-    r: f64,
-    g: f64,
-    b: f64,
-}
+//--------------------//
+#[derive(Copy, Clone)]//
+struct RGB_ {         //
+    r: f64,           //
+    g: f64,           //
+    b: f64,           //
+}                     //
+//--------------------//
 
-#[derive(Copy, Clone)]
-struct Color_ {
-    r: f64,
-    g: f64,
-    b: f64,
-    special: f64
-}
-impl Color_ {
-    pub fn new() -> Color_ {
-        Color_ {
-            r: 0.5,
-            g: 0.5,
-            b: 0.5,
-            special: 0.0
-        }
-    }
-}
+//--------------------------//
+#[derive(Copy, Clone)]      //
+struct Color_ {             //
+    r: f64,                 //
+    g: f64,                 //
+    b: f64,                 //
+    special: f64            //
+}impl Color_ {              //
+    pub fn new() -> Color_ {//
+        Color_ {            //
+            r: 0.5,         //
+            g: 0.5,         //
+            b: 0.5,         //
+            special: 0.0    //
+        }                   //
+    }                       //
+}                           //
+//--------------------------//
 
-#[derive(Copy, Clone)]
-struct Light_{
-    position: Vect_,
-    color: Color_,
-}
-impl Light_{
-    pub fn new() -> Light_ {
-        Light_ {
-            position: Vect_{x:0.0, y:0.0, z:0.0},
-            color:    Color_{r:1.0,g:1.0,b:1.0,special:0.0}
-        }
-    }
-}
+//------------------------------------------------------//
+#[derive(Copy, Clone)]                                  //
+struct Light_{                                          //
+    position: Vect_,                                    //
+    color: Color_,                                      //
+}impl Light_{                                           //
+    pub fn new() -> Light_ {                            //
+        Light_ {                                        //
+            position: Vect_{x:0.0, y:0.0, z:0.0},       //
+            color: Color_{r:1.0,g:1.0,b:1.0,special:0.0}//
+        }                                               //
+    }                                                   //
+}                                                       //
+//------------------------------------------------------//
 
-#[derive(Copy, Clone)]
-struct Vect_ {
-    x: f64,
-    y: f64,
-    z: f64,
-}
-impl Vect_ {
-    fn normalize(&self) -> Vect_ { 
-        let mag = (&self.x.powf(2.0) + &self.y.powf(2.0) + &self.z.powf(2.0)).powf(0.5);
-        return Vect_{x: &self.x/mag, y: &self.y/mag, z: &self.z/mag}
-    }
-    fn magnitude(&self) -> f64 { 
-        return (&self.x.powf(2.0) + &self.y.powf(2.0) + &self.z.powf(2.0)).powf(0.5)
-    }
-    fn negative(&self) -> Vect_ { 
-        return Vect_{x: -&self.x, y: -&self.y, z: -&self.z};
-    }
-    
-    fn dot(&self, v: Vect_) -> f64 { 
-        return &self.x*v.x + &self.y*v.y + &self.z*v.z;
-    }
-    fn cross(&self, v: Vect_) -> Vect_ { 
-        return Vect_ {x: &self.y*v.z - &self.z*v.y, 
-                      y: &self.z*v.x - &self.x*v.z,
-                      z: &self.x*v.y - &self.y*v.x};
-    }
-    fn vectAdd(&self, v: Vect_) -> Vect_ { 
-        return Vect_ {x: &self.x + v.x, 
-                      y: &self.y + v.y,
-                      z: &self.z + v.z};
-    }
-    fn vectMult(&self, val: f64) -> Vect_ { 
-        return Vect_ {x: &self.x*val, 
-                      y: &self.y*val,
-                      z: &self.z*val};
-    }
-    
-    pub fn new() -> Vect_ {
-        Vect_ {
-            x: 0.0,
-            y: 0.0,
-            z: 0.0,
-        }
-    }
-}
+//---------------------------------------------------------------------------------------//
+#[derive(Copy, Clone)]                                                                   //
+struct Vect_ {                                                                           //
+    x: f64,                                                                              //
+    y: f64,                                                                              //
+    z: f64,                                                                              //
+}impl Vect_ {                                                                            //
+    fn normalize(&self) -> Vect_ {                                                       //
+        let mag = (&self.x.powf(2.0) + &self.y.powf(2.0) + &self.z.powf(2.0)).powf(0.5); //
+        return Vect_{x: &self.x/mag, y: &self.y/mag, z: &self.z/mag}                     //
+    }                                                                                    //
+    fn magnitude(&self) -> f64 {                                                         //
+        return (&self.x.powf(2.0) + &self.y.powf(2.0) + &self.z.powf(2.0)).powf(0.5)     //
+    }                                                                                    //
+    fn negative(&self) -> Vect_ {                                                        //
+        return Vect_{x: -&self.x, y: -&self.y, z: -&self.z};                             //
+    }                                                                                    //
+                                                                                         //
+    fn dot(&self, v: Vect_) -> f64 {                                                     //
+        return &self.x*v.x + &self.y*v.y + &self.z*v.z;                                  //
+    }                                                                                    //
+    fn cross(&self, v: Vect_) -> Vect_ {                                                 //
+        return Vect_ {x: &self.y*v.z - &self.z*v.y,                                      //
+                      y: &self.z*v.x - &self.x*v.z,                                      //
+                      z: &self.x*v.y - &self.y*v.x};                                     //
+    }                                                                                    //
+    fn vectAdd(&self, v: Vect_) -> Vect_ {                                               //
+        return Vect_ {x: &self.x + v.x,                                                  //
+                      y: &self.y + v.y,                                                  //
+                      z: &self.z + v.z};                                                 //
+    }                                                                                    //
+    fn vectMult(&self, val: f64) -> Vect_ {                                              //
+        return Vect_ {x: &self.x*val,                                                    //
+                      y: &self.y*val,                                                    //
+                      z: &self.z*val};                                                   //
+    }                                                                                    //
+    pub fn new() -> Vect_ {                                                              //
+        Vect_ {                                                                          //
+            x: 0.0,                                                                      //
+            y: 0.0,                                                                      //
+            z: 0.0,                                                                      //
+        }                                                                                //
+    }                                                                                    //
+}                                                                                        //
+//---------------------------------------------------------------------------------------//
 
-#[derive(Copy, Clone)]
-struct Ray_ {
-    origin: Vect_,
-    direction: Vect_,
-}
-impl Ray_ {
-    //fn value(&self) -> &f64 { &self.x }
-    pub fn new() -> Ray_ {
-        Ray_ {
-            origin:    Vect_ {x: 0.0, y: 0.0, z: 0.0},
-            direction: Vect_ {x: 1.0, y: 0.0, z: 0.0},
-        }
-    }
-}
+//----------------------------------------------------//
+#[derive(Copy, Clone)]                                //
+struct Ray_ {                                         //
+    origin: Vect_,                                    //
+    direction: Vect_,                                 //
+}impl Ray_ {                                          //
+    //fn value(&self) -> &f64 { &self.x }             //
+    pub fn new() -> Ray_ {                            //
+        Ray_ {                                        //
+            origin:    Vect_ {x: 0.0, y: 0.0, z: 0.0},//
+            direction: Vect_ {x: 1.0, y: 0.0, z: 0.0},//
+        }                                             //
+    }                                                 //
+}                                                     //
+//----------------------------------------------------//
 
-#[derive(Copy, Clone)]
-struct Camera_ {
-    pos:   Vect_,
-    dir:   Vect_,
-    right: Vect_,
-    down:  Vect_,
-}
-impl Camera_ {
-    //fn value(&self) -> &f64 { &self.x }
-    pub fn new() -> Camera_ {
-        Camera_ {
-            pos:   Vect_ {x: 0.0, y: 0.0, z: 0.0},
-            dir:   Vect_ {x: 0.0, y: 0.0, z: 1.0},
-            right: Vect_ {x: 0.0, y: 0.0, z: 0.0},
-            down:  Vect_ {x: 0.0, y: 0.0, z: 0.0},
+//------------------------------------------------//
+#[derive(Copy, Clone)]                            //
+struct Camera_ {                                  //
+    pos:   Vect_,                                 //
+    dir:   Vect_,                                 //
+    right: Vect_,                                 //
+    down:  Vect_,                                 //
+}                                                 //
+impl Camera_ {                                    //
+    //fn value(&self) -> &f64 { &self.x }         //
+    pub fn new() -> Camera_ {                     //
+        Camera_ {                                 //
+            pos:   Vect_ {x: 0.0, y: 0.0, z: 0.0},//
+            dir:   Vect_ {x: 0.0, y: 0.0, z: 1.0},//
+            right: Vect_ {x: 0.0, y: 0.0, z: 0.0},//
+            down:  Vect_ {x: 0.0, y: 0.0, z: 0.0},//
+        }                                         //
+    }                                             //
+}                                                 //
+//------------------------------------------------//
+
+//----------------------------------------//
+trait Object_ {                           //
+    fn getColor() -> Color_;              //
+    fn findIntersection(ray: Ray_) -> f64;//
+}                                         //
+//----------------------------------------//
+
+//------------------------------------------------------//
+#[derive(Copy, Clone)]                                  //
+struct Sphere_{                                         //
+    center: Vect_,                                      //
+    radius: f64,                                        //
+    color:  Color_,                                     //
+} impl Sphere_{                                         //
+    pub fn new() -> Sphere_ {                           //
+        Sphere_ {                                       //
+            center: Vect_{x:0.0,y:0.0,z:0.0},           //
+            radius: 1.0,                                //
+            color: Color_{r:0.5,g:0.5,b:1.0,special:0.0}//
+        }                                               //
+    }                                                   //
+}                                                       //
+//------------------------------------------------------//
+
+
+//impl Object for Sphere_{
+//    fn getColor() -> Color_{
+//        return Color_{r:0.0,g:0.0,b:0.0,special:0.0}
+//    }
+//    fn findIntersection(ray: Ray_) -> f64{
+//        return Ray_{origin:Vect_{}, 
+//                    direction:Vect_{}}
+//    }
+//}
+
+struct Plane_{
+    normal:   Vect_,
+    distance: f64,
+    color:    Color_
+} impl Plane_{
+    pub fn new() -> Plane_ {                               
+        Plane_ {                                       
+            normal: Vect_{x:1.0,y:0.0,z:0.0},           
+            distance: 1.0,                                
+            color: Color_{r:0.5,g:0.5,b:0.5,special:0.0}
+        }                                               
+    }
+    fn getNormalAt(&self, point: Vect_) -> Vect_{
+        return self.normal;
+    }
+    fn findIntersection(&self,ray: Ray_) -> f64{
+        let r_direct = ray.direction;
+        // Dot product of the direction of the ray and the normal of the plane
+        let a = r_direct.dot(self.normal);
+        // Ray and plane are orthogonal
+        if a == 0.0{
+            return -1.0
+        }else{
+            // Dot product of normal and the vector opposite direction of the origin of the ray
+            let b = &self.normal.dot(ray.origin.vectAdd(self.normal.vectMult(self.distance).negative()));
+            return -1.0*b/a
         }
     }
 }
@@ -136,6 +208,7 @@ fn main() {
     let mut X = Vect_ {x: 1.0, y: 0.0, z: 0.0};
     let mut Y = Vect_ {x: 0.0, y: 1.0, z: 0.0};
     let mut Z = Vect_ {x: 0.0, y: 0.0, z: 1.0};
+    let mut O = Vect_ {x: 0.0, y: 0.0, z: 0.0};
     
     let mut campos = Vect_{x: 3.0, y: 1.0, z:-5.2};
     let mut look_point = Vect_{x: 0.0, y: 0.0, z: 0.0};
@@ -147,13 +220,19 @@ fn main() {
     let mut camdown  = camright.cross(camdir);
     let mut cam      = Camera_{pos:campos, dir:camdir, right:camright, down:camdown};
     
-    let white = Color_{r:1.0,g:1.0,b:1.0,special:0.0};
-    let green = Color_{r:0.5,g:1.0,b:0.5,special:0.3};
-    let gray  = Color_{r:0.5,g:0.5,b:0.5,special:0.0};
-    let black = Color_{r:0.0,g:0.0,b:0.0,special:0.0};
+    let white  = Color_{r:1.0,g:1.0, b:1.0, special:0.0};
+    let green  = Color_{r:0.5,g:1.0, b:0.5, special:0.3};
+    let gray   = Color_{r:0.5,g:0.5, b:0.5, special:0.0};
+    let maroon = Color_{r:0.5,g:0.25,b:0.25,special:0.0};
+    let black  = Color_{r:0.0,g:0.0, b:0.0, special:0.0};
     
     let light_position = Vect_{x:-7.0, y:10.0, z: -10.0};
     let light_source   = Light_{position: light_position, color: white};
+    
+    //--------------------------------------------------------------------------------
+    let _sphere = Sphere_{center:O,radius: 1.0,color: green};
+    let _plane  = Plane_{normal:Y,distance:-1.0,color: maroon};
+    //--------------------------------------------------------------------------------
     
     use glium::{DisplayBuild, Surface};
     let display = glium::glutin::WindowBuilder::new().build_glium().unwrap();
