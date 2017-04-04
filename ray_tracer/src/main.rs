@@ -195,10 +195,13 @@ struct Plane_{
 }
 
 
+
 fn main() {
+    let mut thisone: f64;
     //?dpi
     let width:  u32 = 640;
     let height: u32 = 480;
+    let aspectratio = (width as f64)/(height as f64);
     let mut image = Vec::new();
     
     for x in 0..width*height {
@@ -232,15 +235,35 @@ fn main() {
     //--------------------------------------------------------------------------------
     let _sphere = Sphere_{center:O,radius: 1.0,color: green};
     let _plane  = Plane_{normal:Y,distance:-1.0,color: maroon};
+    let mut shft_x: f64; let mut shft_y: f64;
+    
+    // Offset a position from direction camera pointing in order to 
+    // create rays that shoot to the left/right/up/down of the camera direction
+    //if width > height{
+    //    shft_x = ((x+0.5)/width) * aspectratio - (((width-height)/(height as f64))/2);
+    //    shft_y = ((height - y) + 0.5)/height;
+    //}
+    //else if height > width{
+    //    shft_x = ((x + 0.5)/width);
+    //    shft_y = (((height-y)+0.5)/height)/aspectratio - (((height - width)/(width as f64))/2);
+    //}
+    //else{
+    //    shft_x = (x + 0.5)/width;
+    //    shft_y = ((height-y)+0.5)/height;
+    //}
     //--------------------------------------------------------------------------------
     
     use glium::{DisplayBuild, Surface};
     let display = glium::glutin::WindowBuilder::new().build_glium().unwrap();
-
+    
+    
     loop {
         let mut target = display.draw();
-        target.clear_color(0.0, 1.0, 1.0, 1.0);
+        //target.clear_color(0.0, 1.0, 1.0, 1.0);
+        
         target.finish().unwrap();
+        
+        //let pixels: Vec<Vec<(u8, u8, u8, u8)>> = display.read_front_buffer();
 
         for ev in display.poll_events() {
             match ev {
