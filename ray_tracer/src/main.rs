@@ -1,6 +1,9 @@
 #[macro_use]
 extern crate glium;
 
+use std::fs::File;
+use std::io::prelude::*;
+
 use glium::Surface;
 
 //--------------------//
@@ -159,7 +162,7 @@ struct Sphere_{                                         //
 //        return Color_{r:0.0,g:0.0,b:0.0,special:0.0}
 //    }
 //    fn findIntersection(ray: Ray_) -> f64{
-//        return Ray_{origin:Vect_{}, 
+//        return Ray_{origin:Vect_{},
 //                    direction:Vect_{}}
 //    }
 //}
@@ -169,12 +172,12 @@ struct Plane_{
     distance: f64,
     color:    Color_
 } impl Plane_{
-    pub fn new() -> Plane_ {                               
-        Plane_ {                                       
-            normal: Vect_{x:1.0,y:0.0,z:0.0},           
-            distance: 1.0,                                
+    pub fn new() -> Plane_ {
+        Plane_ {
+            normal: Vect_{x:1.0,y:0.0,z:0.0},
+            distance: 1.0,
             color: Color_{r:0.5,g:0.5,b:0.5,special:0.0}
-        }                                               
+        }
     }
     fn getNormalAt(&self, point: Vect_) -> Vect_{
         return self.normal;
@@ -203,16 +206,16 @@ fn main() {
     let height: u32 = 480;
     let aspectratio = (width as f64)/(height as f64);
     let mut image = Vec::new();
-    
+
     for x in 0..width*height {
         image.push(Vect_ {x: 0.0, y: 0.0, z: 0.0});
     }
-    
+
     let mut X = Vect_ {x: 1.0, y: 0.0, z: 0.0};
     let mut Y = Vect_ {x: 0.0, y: 1.0, z: 0.0};
     let mut Z = Vect_ {x: 0.0, y: 0.0, z: 1.0};
     let mut O = Vect_ {x: 0.0, y: 0.0, z: 0.0};
-    
+
     let mut campos = Vect_{x: 3.0, y: 1.0, z:-5.2};
     let mut look_point = Vect_{x: 0.0, y: 0.0, z: 0.0};
     // Difference between camera position and the point we are aiming for
@@ -222,22 +225,22 @@ fn main() {
     let mut camright = Y.cross(camdir).normalize();
     let mut camdown  = camright.cross(camdir);
     let mut cam      = Camera_{pos:campos, dir:camdir, right:camright, down:camdown};
-    
+
     let white  = Color_{r:1.0,g:1.0, b:1.0, special:0.0};
     let green  = Color_{r:0.5,g:1.0, b:0.5, special:0.3};
     let gray   = Color_{r:0.5,g:0.5, b:0.5, special:0.0};
     let maroon = Color_{r:0.5,g:0.25,b:0.25,special:0.0};
     let black  = Color_{r:0.0,g:0.0, b:0.0, special:0.0};
-    
+
     let light_position = Vect_{x:-7.0, y:10.0, z: -10.0};
     let light_source   = Light_{position: light_position, color: white};
-    
+
     //--------------------------------------------------------------------------------
     let _sphere = Sphere_{center:O,radius: 1.0,color: green};
     let _plane  = Plane_{normal:Y,distance:-1.0,color: maroon};
     let mut shft_x: f64; let mut shft_y: f64;
-    
-    // Offset a position from direction camera pointing in order to 
+
+    // Offset a position from direction camera pointing in order to
     // create rays that shoot to the left/right/up/down of the camera direction
     //if width > height{
     //    shft_x = ((x+0.5)/width) * aspectratio - (((width-height)/(height as f64))/2);
@@ -252,17 +255,17 @@ fn main() {
     //    shft_y = ((height-y)+0.5)/height;
     //}
     //--------------------------------------------------------------------------------
-    
+
     use glium::{DisplayBuild, Surface};
     let display = glium::glutin::WindowBuilder::new().build_glium().unwrap();
-    
-    
+
+
     loop {
         let mut target = display.draw();
         //target.clear_color(0.0, 1.0, 1.0, 1.0);
-        
+
         target.finish().unwrap();
-        
+
         //let pixels: Vec<Vec<(u8, u8, u8, u8)>> = display.read_front_buffer();
 
         for ev in display.poll_events() {
@@ -272,4 +275,71 @@ fn main() {
             }
         }
     }
+}
+
+fn savebmp (filename: String, w: u32, h: u32, dpi: u32, data: RGB_) {
+
+    let mut file = File::create(filename)?;
+    file.write_all(b"")?;
+	//FILE *f;
+	let k = w*h;
+	let s = 4*k;
+	let filesize = 54 + s;
+
+	let factor = 39.375;
+	let m = factor as u32;
+
+	let ppm = dpi*m;
+
+	unsigned char bmpfileheader[14] = {'B','M', 0,0,0,0, 0,0,0,0, 54,0,0,0};
+	unsigned char bmpinfoheader[40] = {40,0,0,0, 0,0,0,0, 0,0,0,0, 1,0,24,0};
+
+	bmpfileheader[ 2] = (unsigned char)(filesize);
+	bmpfileheader[ 3] = (unsigned char)(filesize>>8);
+	bmpfileheader[ 4] = (unsigned char)(filesize>>16);
+	bmpfileheader[ 5] = (unsigned char)(filesize>>24);
+
+	bmpinfoheader[ 4] = (unsigned char)(w);
+	bmpinfoheader[ 5] = (unsigned char)(w>>8);
+	bmpinfoheader[ 6] = (unsigned char)(w>>16);
+	bmpinfoheader[ 7] = (unsigned char)(w>>24);
+
+	bmpinfoheader[ 8] = (unsigned char)(h);
+	bmpinfoheader[ 9] = (unsigned char)(h>>8);
+	bmpinfoheader[10] = (unsigned char)(h>>16);
+	bmpinfoheader[11] = (unsigned char)(h>>24);
+
+	bmpinfoheader[21] = (unsigned char)(s);
+	bmpinfoheader[22] = (unsigned char)(s>>8);
+	bmpinfoheader[23] = (unsigned char)(s>>16);
+	bmpinfoheader[24] = (unsigned char)(s>>24);
+
+	bmpinfoheader[25] = (unsigned char)(ppm);
+	bmpinfoheader[26] = (unsigned char)(ppm>>8);
+	bmpinfoheader[27] = (unsigned char)(ppm>>16);
+	bmpinfoheader[28] = (unsigned char)(ppm>>24);
+
+	bmpinfoheader[29] = (unsigned char)(ppm);
+	bmpinfoheader[30] = (unsigned char)(ppm>>8);
+	bmpinfoheader[31] = (unsigned char)(ppm>>16);
+	bmpinfoheader[32] = (unsigned char)(ppm>>24);
+
+	//file = fopen(filename,"wb");
+
+	fwrite(bmpfileheader,1,14,file);
+	fwrite(bmpinfoheader,1,40,file);
+
+	for i in 0..k {
+		RGB_ rgb = data[i];
+
+		double red = (data[i].r)*255;
+		double green = (data[i].g)*255;
+		double blue = (data[i].b)*255;
+
+		unsigned char color[3] = {(int)floor(blue),(int)floor(green),(int)floor(red)};
+
+		fwrite(color,1,3,file);
+	}
+
+	//fclose(file);
 }
