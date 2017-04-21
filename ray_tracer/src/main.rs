@@ -1,10 +1,7 @@
 #[macro_use]
-extern crate glium;
-
-use std::fs::File;
-use std::io::prelude::*;
-
-use glium::Surface;
+extern crate raster; 
+use raster::Image;
+use raster::Color;
 
 //--------------------//
 #[derive(Copy, Clone)]//
@@ -197,7 +194,14 @@ struct Plane_{
     }
 }
 
-
+const SCREEN_WIDTH: u32 = 800;
+const SCREEN_HEIGHT: u32 = 600;
+// hadle the annoying Rect i32
+macro_rules! rect(
+    ($x:expr, $y:expr, $w:expr, $h:expr) => (
+        sdl2::rect::Rect::new($x as i32, $y as i32, $w as i32, $h as i32)
+    )
+);
 
 fn main() {
     let mut thisone: f64;
@@ -256,90 +260,39 @@ fn main() {
     //}
     //--------------------------------------------------------------------------------
 
-    use glium::{DisplayBuild, Surface};
-    let display = glium::glutin::WindowBuilder::new().build_glium().unwrap();
+    //use glium::{DisplayBuild, Surface};
+    //let display = glium::glutin::WindowBuilder::new().build_glium().unwrap();
 
+    //loop {
+    //    let mut target = display.draw();
+    //    //target.clear_color(0.0, 1.0, 1.0, 1.0);
 
-    loop {
-        let mut target = display.draw();
-        //target.clear_color(0.0, 1.0, 1.0, 1.0);
+    //    target.finish().unwrap();
 
-        target.finish().unwrap();
+    //    //let pixels: Vec<Vec<(u8, u8, u8, u8)>> = display.read_front_buffer();
 
-        //let pixels: Vec<Vec<(u8, u8, u8, u8)>> = display.read_front_buffer();
+    //    for ev in display.poll_events() {
+    //        match ev {
+    //            glium::glutin::Event::Closed => return,
+    //            _ => ()
+    //        }
+    //    }
+    //}
 
-        for ev in display.poll_events() {
-            match ev {
-                glium::glutin::Event::Closed => return,
-                _ => ()
-            }
+    let mut canvas = Image::blank(800, 600);
+    for x_ in 0..800{
+        for y_ in 0..600{
+            canvas.set_pixel(x_, y_, Color::rgba((x_%255) as u8, 0, 0, (x_%255) as u8)).unwrap();
         }
     }
+    raster::save(&canvas, "test_tmp.png");
+
+    //let mut canvas = Image::blank(200, 100); // Mutable 200x100 image with black background
+
+    //canvas.set_pixel(10, 10, Color::rgba(255, 0, 0, 255)).unwrap(); // Set pixel at 10, 10 to red
+
+    //raster::save(&canvas, "test_tmp.png"); // Save
+
+
 }
 
-fn savebmp (filename: String, w: u32, h: u32, dpi: u32, data: RGB_) {
-
-    let mut file = File::create(filename)?;
-    file.write_all(b"")?;
-	//FILE *f;
-	let k = w*h;
-	let s = 4*k;
-	let filesize = 54 + s;
-
-	let factor = 39.375;
-	let m = factor as u32;
-
-	let ppm = dpi*m;
-
-	unsigned char bmpfileheader[14] = {'B','M', 0,0,0,0, 0,0,0,0, 54,0,0,0};
-	unsigned char bmpinfoheader[40] = {40,0,0,0, 0,0,0,0, 0,0,0,0, 1,0,24,0};
-
-	bmpfileheader[ 2] = (unsigned char)(filesize);
-	bmpfileheader[ 3] = (unsigned char)(filesize>>8);
-	bmpfileheader[ 4] = (unsigned char)(filesize>>16);
-	bmpfileheader[ 5] = (unsigned char)(filesize>>24);
-
-	bmpinfoheader[ 4] = (unsigned char)(w);
-	bmpinfoheader[ 5] = (unsigned char)(w>>8);
-	bmpinfoheader[ 6] = (unsigned char)(w>>16);
-	bmpinfoheader[ 7] = (unsigned char)(w>>24);
-
-	bmpinfoheader[ 8] = (unsigned char)(h);
-	bmpinfoheader[ 9] = (unsigned char)(h>>8);
-	bmpinfoheader[10] = (unsigned char)(h>>16);
-	bmpinfoheader[11] = (unsigned char)(h>>24);
-
-	bmpinfoheader[21] = (unsigned char)(s);
-	bmpinfoheader[22] = (unsigned char)(s>>8);
-	bmpinfoheader[23] = (unsigned char)(s>>16);
-	bmpinfoheader[24] = (unsigned char)(s>>24);
-
-	bmpinfoheader[25] = (unsigned char)(ppm);
-	bmpinfoheader[26] = (unsigned char)(ppm>>8);
-	bmpinfoheader[27] = (unsigned char)(ppm>>16);
-	bmpinfoheader[28] = (unsigned char)(ppm>>24);
-
-	bmpinfoheader[29] = (unsigned char)(ppm);
-	bmpinfoheader[30] = (unsigned char)(ppm>>8);
-	bmpinfoheader[31] = (unsigned char)(ppm>>16);
-	bmpinfoheader[32] = (unsigned char)(ppm>>24);
-
-	//file = fopen(filename,"wb");
-
-	fwrite(bmpfileheader,1,14,file);
-	fwrite(bmpinfoheader,1,40,file);
-
-	for i in 0..k {
-		RGB_ rgb = data[i];
-
-		double red = (data[i].r)*255;
-		double green = (data[i].g)*255;
-		double blue = (data[i].b)*255;
-
-		unsigned char color[3] = {(int)floor(blue),(int)floor(green),(int)floor(red)};
-
-		fwrite(color,1,3,file);
-	}
-
-	//fclose(file);
-}
