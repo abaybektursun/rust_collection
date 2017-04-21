@@ -194,14 +194,6 @@ struct Plane_{
     }
 }
 
-const SCREEN_WIDTH: u32 = 800;
-const SCREEN_HEIGHT: u32 = 600;
-// hadle the annoying Rect i32
-macro_rules! rect(
-    ($x:expr, $y:expr, $w:expr, $h:expr) => (
-        sdl2::rect::Rect::new($x as i32, $y as i32, $w as i32, $h as i32)
-    )
-);
 
 fn main() {
     let mut thisone: f64;
@@ -212,7 +204,7 @@ fn main() {
     let mut image = Vec::new();
 
     for x in 0..width*height {
-        image.push(Vect_ {x: 0.0, y: 0.0, z: 0.0});
+        image.push(RGB_ {r: 0.5, g: 0.2, b: 0.3});
     }
 
     let mut X = Vect_ {x: 1.0, y: 0.0, z: 0.0};
@@ -259,40 +251,36 @@ fn main() {
     //    shft_y = ((height-y)+0.5)/height;
     //}
     //--------------------------------------------------------------------------------
-
-    //use glium::{DisplayBuild, Surface};
-    //let display = glium::glutin::WindowBuilder::new().build_glium().unwrap();
-
-    //loop {
-    //    let mut target = display.draw();
-    //    //target.clear_color(0.0, 1.0, 1.0, 1.0);
-
-    //    target.finish().unwrap();
-
-    //    //let pixels: Vec<Vec<(u8, u8, u8, u8)>> = display.read_front_buffer();
-
-    //    for ev in display.poll_events() {
-    //        match ev {
-    //            glium::glutin::Event::Closed => return,
-    //            _ => ()
-    //        }
-    //    }
-    //}
-
-    let mut canvas = Image::blank(800, 600);
-    for x_ in 0..800{
-        for y_ in 0..600{
-            canvas.set_pixel(x_, y_, Color::rgba((x_%255) as u8, 0, 0, (x_%255) as u8)).unwrap();
+    let mut this_pixel: u32;
+    for x_ in 0..width{
+        for y_ in 0..height{
+            this_pixel = y_*width + x_;
+            // Offset a position from direction camera pointing in order to
+            // create rays that shoot to the left/right/up/down of the camera direction
+            if width > height{
+                shft_x = ((x+0.5)/width) * aspectratio - (((width-height)/(height as f64))/2);
+                shft_y = ((height - y) + 0.5)/height;
+            }
+            else if height > width{
+                shft_x = ((x + 0.5)/width);
+                shft_y = (((height-y)+0.5)/height)/aspectratio - (((height - width)/(width as f64))/2);
+            }
+            else{
+                shft_x = (x + 0.5)/width;
+                shft_y = ((height-y)+0.5)/height;
+            }
+         
         }
     }
-    raster::save(&canvas, "test_tmp.png");
 
-    //let mut canvas = Image::blank(200, 100); // Mutable 200x100 image with black background
-
-    //canvas.set_pixel(10, 10, Color::rgba(255, 0, 0, 255)).unwrap(); // Set pixel at 10, 10 to red
-
-    //raster::save(&canvas, "test_tmp.png"); // Save
-
-
+    
+    let mut canvas = Image::blank(width as i32, height as i32);
+    for x_ in 0..width{
+        for y_ in 0..height{
+            this_pixel = y_*width + x_;
+            canvas.set_pixel(x_ as i32, y_ as i32, Color::rgba((image[this_pixel as usize].r*255.0) as u8, (image[this_pixel as usize].g*255.0) as u8, (image[this_pixel as usize].b*255.0) as u8, 255)).unwrap();
+        }
+    }
+    raster::save(&canvas, "output.png");
 }
 
