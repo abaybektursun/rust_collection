@@ -28,45 +28,8 @@ struct Color_ {             //
             special: 0.0    //
         }                   //
     }                       //
-    pub fn brightness(&self) -> f64{
-        return(self.g + self.r + self.b);
-    }
-    pub fn colorScalar (&self,scalar: f64) -> Color_{
-        let r = self.r; let g = self.g; let b = self.b;
-        return Color_{r: r * scalar, 
-                      g: g * scalar, 
-                      b: b * scalar,
-                      special: self.special};
-    }
-    pub fn colorAdd(&self, color: Color_) -> Color_ {
-        let r = self.r; let g = self.g; let b = self.b;
-        return Color_{r: r + color.r,
-                      g: g + color.g, 
-                      b: b + color.b, 
-                      special: self.special};
-    }
-    pub fn colorMultiply(&self, color: Color_) -> Color_{
-        let r = self.r; let g = self.g; let b = self.b;
-        return Color_{r: r * color.r,
-                      g: g * color.g, 
-                      b: b * color.b, 
-                      special: self.special};
-    }
-    pub fn colorAverage (&self, color: Color_) -> Color_{
-        let r = self.r; let g = self.g; let b = self.b;
-        return Color_{r: (r + color.r)/2.0, 
-                      g: (g + color.g)/2.0, 
-                      b: (b + color.b)/2.0, 
-                      special: self.special};
-    }
 }                           //
 //--------------------------//
-
-trait Source_{
-    fn getLightPosition(&self)
-    fn get Color(&self)
-}
-
 
 //------------------------------------------------------//
 #[derive(Copy, Clone)]                                  //
@@ -168,7 +131,6 @@ impl Camera_ {                                    //
 
 //-----------------------------------------------//
 trait Object_ {                                  //
-    fn color(&self,) -> Color_;                   //
     fn findIntersection(&self,ray: Ray_) -> f64; //
     fn getNormalAt(&self, point: Vect_) -> Vect_;//
 }                                                //
@@ -217,9 +179,6 @@ struct Sphere_{                                                         //
             // The ray does not intersect the sphere
             return -1.0
         } 
-    }
-    fn color(&self) -> Color_{
-         return self.color;
     }                                                                   //    
 }                                                                       //
 //----------------------------------------------------------------------//
@@ -247,55 +206,6 @@ struct Plane_{
         let dummy = Vect_{x: 1.0, y: 0.0, z: 0.0};
         return dummy; 
     }
-    fn color(&self) -> Color_{
-         return self.color;
-    }
-
-}
-
-fn winningObjectIndex(object_intersections: Vec<f64>) -> i32{
-    // Return the index of the winning intersection
-    let mut index_of_min_value: i32 = -1;
-    // Avoid useless comutaitons
-    if object_intersections.len() == 0 {
-        // If there are no interscetions
-        return -1;   
-    }
-    else if object_intersections.len() == 1{
-        if object_intersections[0] > 0.0{
-            // if that intersction is greater than 0 then its our index of min
-            return 0;
-        }
-        else{
-            // Otherwise the only intersction value is negative
-            return -1;
-        }
-    }
-    // Find the object closes to the camera
-    else {
-        // Find the max value in the vector
-        let mut max: f64 = 0.0;
-        for i in 0..object_intersections.len(){
-            if max < object_intersections[i] {
-                max = object_intersections[i];
-            }
-        }
-        // Starting from the maximum value find the minimum positive value
-        if max > 0.0 {
-            // We need positive intersections
-            for idx in 0..object_intersections.len(){
-                if object_intersections[idx] > 0.0 && object_intersections[idx] <= max {
-                    max = object_intersections[idx];
-                    index_of_min_value = idx as i32;
-                }
-            }
-            return index_of_min_value;
-        }
-        else {
-            return -1;
-        }
-    }
-    
 }
 
 
@@ -306,9 +216,6 @@ fn main() {
     let height: u32 = 480;
     let aspectratio = (width as f64)/(height as f64);
     let mut image = Vec::new();
-
-    let accuracy: f64     = 0.00001;
-    let ambientlight: f64 = 0.2;
 
     for x in 0..width*height {
         image.push(RGB_ {r: 0.5, g: 0.2, b: 0.3});
@@ -337,8 +244,6 @@ fn main() {
 
     let light_position = Vect_{x:-7.0, y:10.0, z: -10.0};
     let light_source   = Light_{position: light_position, color: white};
-    let mut light_sources: Vec<Box<Light_>> = Vec::new();
-    light_source.push(light_source);
 
     //--------------------------------------------------------------------------------
     let _sphere = Sphere_{center:O,radius: 1.0,color: green};
@@ -397,30 +302,6 @@ fn main() {
             for idx in 0..scene_objects.len(){
                 intersections.push(scene_objects[idx as usize].findIntersection(cam_ray));
             }
-            let intersections_copy = intersections.clone(); 
-            let index_of_winning_object = winningObjectIndex(intersections_copy);
-            //print!("{}", index_of_winning_object); 
-            if index_of_winning_object == -1 {
-                image[this_pixel as usize].r = 0.1;
-                image[this_pixel as usize].g = 0.2;
-                image[this_pixel as usize].b = 0.1;
-            }
-
-            else{
-                
-                if intersections[index_of_winning_object as usize] > accuracy{
-                    // Determine the position and direction vectors at the point of intersections
-                    let intersection_position = cam_ray_origin.vectAdd(cam_ray_direction.vectMult(intersections[index_of_winning_object as usize]));
-                    let intersecting_ray_direction = cam_ray_direction;
-
-                    let a_color = getColorAt(intersection_position, intersecting_ray_direction, scene_objects, index_of_winning_object, light_sources, accuracy, ambientlight);
-
-                    image[this_pixel as usize].r = a_color.r;
-                    image[this_pixel as usize].g = a_color.g;
-                    image[this_pixel as usize].b = a_color.b;
-                }
-            }
- 
         }
     }
 
@@ -435,11 +316,3 @@ fn main() {
     raster::save(&canvas, "output.png");
 }
 
-fn getColorAt(intersection_position: Vect_, 
-              intersecting_ray_direction: Vect_, 
-              scene_objects: Vec<Box<Object_>>, 
-              index_of_winning_object: i32, 
-              light_sources: Vec<Box<Light_>>, 
-              accuracy: f64, ambientlight: f64) -> Color_{
-    
-}
