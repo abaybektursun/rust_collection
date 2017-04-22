@@ -12,75 +12,75 @@ struct RGB_ {         //
 }                     //
 //--------------------//
 
-//-------------------------------------------------------//
-#[derive(Copy, Clone)]                                   //
-struct Color_ {                                          //
-    r: f64,                                              //
-    g: f64,                                              //
-    b: f64,                                              //
-    special: f64                                         //
-}impl Color_ {                                           //
-    pub fn new() -> Color_ {                             //
-        Color_ {                                         //
-            r: 0.5,                                      //
-            g: 0.5,                                      //
-            b: 0.5,                                      //
-            special: 0.0                                 //
-        }                                                //
-    }                                                    //
-    pub fn brightness(&self) -> f64{                     //
-        return(self.g + self.r + self.b);                //
-    }                                                    //
-    pub fn colorScalar (&self,scalar: f64) -> Color_{    //
-        let r = self.r; let g = self.g; let b = self.b;  //
-        return Color_{r: r * scalar,                     //
-                      g: g * scalar,                     //
-                      b: b * scalar,                     //
-                      special: self.special};            //
-    }                                                    //
-    pub fn colorAdd(&self, color: Color_) -> Color_ {    //
-        let r = self.r; let g = self.g; let b = self.b;  //
-        return Color_{r: r + color.r,                    //
-                      g: g + color.g,                    //
-                      b: b + color.b,                    //
-                      special: self.special};            //
-    }                                                    //
-    pub fn colorMultiply(&self, color: Color_) -> Color_{//
-        let r = self.r; let g = self.g; let b = self.b;  //
-        return Color_{r: r * color.r,                    //
-                      g: g * color.g,                    //
-                      b: b * color.b,                    //
-                      special: self.special};            //
-    }                                                    //
-    pub fn colorAverage (&self, color: Color_) -> Color_{//
-        let r = self.r; let g = self.g; let b = self.b;  //
-        return Color_{r: (r + color.r)/2.0,              //
-                      g: (g + color.g)/2.0,              //
-                      b: (b + color.b)/2.0,              //
-                      special: self.special};            //
-    }                                                    //
-    pub fn clip (&mut self) -> Color_{
-        let mut r = self.r; let mut g = self.g; let mut b = self.b;
-        let alllight = r +g +b;
-        let exesslight = alllight -3.0;
-        if exesslight > 0.0 {
-            self.r = r + exesslight * (r/alllight);
-            self.g = g + exesslight * (g/alllight);
-            self.b = b + exesslight * (b/alllight);
-        }
-        r = self.r; g = self.g; b = self.b;
-        if r > 1.0{self.r = 1.0;}
-        if g > 1.0{self.g = 1.0;}
-        if b > 1.0{self.b = 1.0;}
-        
-        if r < 0.0{self.r = 0.0;}
-        if g > 0.0{self.g = 0.0;}
-        if b > 0.0{self.b = 0.0;}
-        
-        return Color_{r: self.r, g: self.g, b:self.b, special: self.special};
-    }
-}                                                        //
-//-------------------------------------------------------//
+//---------------------------------------------------------------------------//
+#[derive(Copy, Clone)]                                                       //
+struct Color_ {                                                              //
+    r: f64,                                                                  //
+    g: f64,                                                                  //
+    b: f64,                                                                  //
+    special: f64                                                             //
+}impl Color_ {                                                               //
+    pub fn new() -> Color_ {                                                 //
+        Color_ {                                                             //
+            r: 0.5,                                                          //
+            g: 0.5,                                                          //
+            b: 0.5,                                                          //
+            special: 0.0                                                     //
+        }                                                                    //
+    }                                                                        //
+    pub fn brightness(&self) -> f64{                                         //
+        return (self.g + self.r + self.b)/3.0                                //
+    }                                                                        //
+    pub fn colorScalar (&self,scalar: f64) -> Color_{                        //
+        let r = self.r; let g = self.g; let b = self.b;                      //
+        return Color_{r: r * scalar,                                         //
+                      g: g * scalar,                                         //
+                      b: b * scalar,                                         //
+                      special: self.special};                                //
+    }                                                                        //
+    pub fn colorAdd(&self, color: Color_) -> Color_ {                        //
+        let r = self.r; let g = self.g; let b = self.b;                      //
+        return Color_{r: r + color.r,                                        //
+                      g: g + color.g,                                        //
+                      b: b + color.b,                                        //
+                      special: self.special};                                //
+    }                                                                        //
+    pub fn colorMultiply(&self, color: Color_) -> Color_{                    //
+        let r = self.r; let g = self.g; let b = self.b;                      //
+        return Color_{r: r * color.r,                                        //
+                      g: g * color.g,                                        //
+                      b: b * color.b,                                        //
+                      special: self.special};                                //
+    }                                                                        //
+    pub fn colorAverage (&self, color: Color_) -> Color_{                    //
+        let r = self.r; let g = self.g; let b = self.b;                      //
+        return Color_{r: (r + color.r)/2.0,                                  //
+                      g: (g + color.g)/2.0,                                  //
+                      b: (b + color.b)/2.0,                                  //
+                      special: self.special};                                //
+    }                                                                        //
+    pub fn clip (&mut self) -> Color_{                                       //
+        let mut r = self.r; let mut g = self.g; let mut b = self.b;          //
+        let alllight = r +g +b;                                              //
+        let exesslight = alllight -3.0;                                      //
+        if exesslight > 0.0 {                                                //
+            self.r = r + exesslight * (r/alllight);                          //
+            self.g = g + exesslight * (g/alllight);                          //
+            self.b = b + exesslight * (b/alllight);                          //
+        }                                                                    //
+        r = self.r; g = self.g; b = self.b;                                  //
+        if r > 1.0{self.r = 1.0;}                                            //
+        if g > 1.0{self.g = 1.0;}                                            //
+        if b > 1.0{self.b = 1.0;}                                            //
+                                                                             //
+        if r < 0.0{self.r = 0.0;}                                            //
+        if g < 0.0{self.g = 0.0;}                                            //
+        if b < 0.0{self.b = 0.0;}                                            //
+                                                                             //
+        return Color_{r: self.r, g: self.g, b:self.b, special: self.special};//
+    }                                                                        //
+}                                                                            //
+//---------------------------------------------------------------------------//
 
 //------------------------------//
 trait Source_{                  //
@@ -115,33 +115,33 @@ struct Vect_ {                                                                  
     z: f64,                                                                              //
 }impl Vect_ {                                                                            //
     fn normalize(&self) -> Vect_ {                                                       //
-        let mag = (&self.x.powf(2.0) + &self.y.powf(2.0) + &self.z.powf(2.0)).powf(0.5); //
-        return Vect_{x: &self.x/mag, y: &self.y/mag, z: &self.z/mag}                     //
+        let mag = (self.x.powf(2.0) + self.y.powf(2.0) + self.z.powf(2.0)).sqrt();       //
+        return Vect_{x: self.x/mag, y: self.y/mag, z: self.z/mag}                        //
     }                                                                                    //
     fn magnitude(&self) -> f64 {                                                         //
-        return (&self.x.powf(2.0) + &self.y.powf(2.0) + &self.z.powf(2.0)).powf(0.5)     //
+        return (self.x.powf(2.0) + self.y.powf(2.0) + self.z.powf(2.0)).sqrt()           //
     }                                                                                    //
     fn negative(&self) -> Vect_ {                                                        //
-        return Vect_{x: -&self.x, y: -&self.y, z: -&self.z};                             //
+        return Vect_{x: -self.x, y: -self.y, z: -self.z};                                //
     }                                                                                    //
                                                                                          //
     fn dot(&self, v: Vect_) -> f64 {                                                     //
-        return &self.x*v.x + &self.y*v.y + &self.z*v.z;                                  //
+        return self.x*v.x + self.y*v.y + self.z*v.z;                                     //
     }                                                                                    //
     fn cross(&self, v: Vect_) -> Vect_ {                                                 //
-        return Vect_ {x: &self.y*v.z - &self.z*v.y,                                      //
-                      y: &self.z*v.x - &self.x*v.z,                                      //
-                      z: &self.x*v.y - &self.y*v.x};                                     //
+        return Vect_ {x: self.y*v.z - self.z*v.y,                                        //
+                      y: self.z*v.x - self.x*v.z,                                        //
+                      z: self.x*v.y - self.y*v.x};                                       //
     }                                                                                    //
     fn vectAdd(&self, v: Vect_) -> Vect_ {                                               //
-        return Vect_ {x: &self.x + v.x,                                                  //
-                      y: &self.y + v.y,                                                  //
-                      z: &self.z + v.z};                                                 //
+        return Vect_ {x: self.x + v.x,                                                   //
+                      y: self.y + v.y,                                                   //
+                      z: self.z + v.z};                                                  //
     }                                                                                    //
     fn vectMult(&self, val: f64) -> Vect_ {                                              //
-        return Vect_ {x: &self.x*val,                                                    //
-                      y: &self.y*val,                                                    //
-                      z: &self.z*val};                                                   //
+        return Vect_ {x: self.x*val,                                                     //
+                      y: self.y*val,                                                     //
+                      z: self.z*val};                                                    //
     }                                                                                    //
     pub fn new_() -> Vect_ {                                                             //
         Vect_ {                                                                          //
@@ -207,7 +207,7 @@ struct Sphere_{                                                                 
 } impl Object_ for Sphere_{                                                       //
     fn getNormalAt(&self, point: Vect_) -> Vect_{                                 //
         //Normal points away from the center of a sphere                          //
-        return point.vectAdd(self.center.negative().normalize());                 //
+        return point.vectAdd(self.center.negative()).normalize();                 //
     }                                                                             //
     fn findIntersection(&self,ray: Ray_) -> f64{                                  //
         let ray_origin = ray.origin;                                              //
@@ -221,13 +221,13 @@ struct Sphere_{                                                                 
         let c = (ray_origin.x - sphere_center.x).powf(2.0) +                      //
                 (ray_origin.y - sphere_center.y).powf(2.0) +                      //
                 (ray_origin.z - sphere_center.z).powf(2.0) -                      //
-                (self.radius*self.radius);                                        //
+                self.radius.powf(2.0);                                            //
         let discriminant = b*b - 4.0*c;                                           //
         if discriminant > 0.0 {                                                   //
             // Ray itersects the shere                                            //
                                                                                   //
             //The First root                                                      //
-            let root_1 = (-1.0*b - discriminant.sqrt()/2.0) - 0.000001;           //
+            let root_1 = ((-1.0*b - discriminant.sqrt())/2.0) - 0.0000001;        //
             if root_1 > 0.0 {                                                     //
                 // The first root is the smallest positive root                   //
                 return root_1;                                                    //
@@ -270,8 +270,9 @@ struct Plane_{
     }
     fn getNormalAt(&self, point: Vect_) -> Vect_{
         // To satisfy hiracy
-        let dummy = Vect_{x: 1.0, y: 0.0, z: 0.0};
-        return dummy; 
+        //let dummy = Vect_{x: 1.0, y: 0.0, z: 0.0};
+        //return dummy; 
+        return self.normal;
     }
     fn color(&self) -> Color_{
          return self.color;
@@ -288,11 +289,11 @@ fn main() {
     let aspectratio = (width as f64)/(height as f64);
     let mut image = Vec::new();
 
-    let accuracy: f64     = 0.00001;
+    let accuracy: f64     = 0.00000001;
     let ambientlight: f64 = 0.2;
 
     for x in 0..width*height {
-        image.push(RGB_ {r: 0.5, g: 0.2, b: 0.3});
+        image.push(RGB_ {r: 0.0, g: 0.0, b: 0.0});
     }
 
     let mut X = Vect_ {x: 1.0, y: 0.0, z: 0.0};
@@ -300,7 +301,7 @@ fn main() {
     let mut Z = Vect_ {x: 0.0, y: 0.0, z: 1.0};
     let mut O = Vect_ {x: 0.0, y: 0.0, z: 0.0};
 
-    let mut campos = Vect_{x: 3.0, y: 1.0, z:-5.2};
+    let mut campos = Vect_{x: 3.0, y: 1.5, z:-4.0};
     let mut look_point = Vect_{x: 0.0, y: 0.0, z: 0.0};
     // Difference between camera position and the point we are aiming for
     let mut diff_between = Vect_ {x: campos.x - look_point.x, y: campos.y - look_point.y, z: campos.z - look_point.z};
@@ -362,8 +363,8 @@ fn main() {
                 shft_y = ((fheight - y) + 0.5)/fheight;
             }
             else if height > width{
-                shft_x = ((x + 0.5)/fwidth);
-                shft_y = (((fheight-y)+0.5)/fheight)/aspectratio - (((fheight - fwidth)/(fwidth))/2.0);
+                shft_x = (x + 0.5)/fwidth;
+                shft_y = (((fheight-y)+0.5)/fheight)/aspectratio - (((fheight - fwidth)/fwidth)/2.0);
             }
             else{
                 shft_x = (x + 0.5)/fwidth;
@@ -392,9 +393,9 @@ fn main() {
             let index_of_winning_object = winningObjectIndex(intersections_copy);
             //print!("{}", index_of_winning_object); 
             if index_of_winning_object == -1 {
-                image[this_pixel as usize].r = 0.1;
-                image[this_pixel as usize].g = 0.2;
-                image[this_pixel as usize].b = 0.1;
+                image[this_pixel as usize].r = 0.0;
+                image[this_pixel as usize].g = 0.0;
+                image[this_pixel as usize].b = 0.0;
             }
 
             else{
@@ -422,7 +423,12 @@ fn main() {
     for x_ in 0..width{
         for y_ in 0..height{
             this_pixel = y_*width + x_;
-            canvas.set_pixel(x_ as i32, y_ as i32, Color::rgba((image[this_pixel as usize].r*255.0) as u8, (image[this_pixel as usize].g*255.0) as u8, (image[this_pixel as usize].b*255.0) as u8, 255)).unwrap();
+            canvas.set_pixel(x_ as i32, y_ as i32, 
+            Color::rgba( 
+                (image[this_pixel as usize].r*255.0).floor() as u8, 
+                (image[this_pixel as usize].g*255.0).floor() as u8, 
+                (image[this_pixel as usize].b*255.0).floor() as u8, 255
+            )).unwrap();            
         }
     }
     raster::save(&canvas, "output.png");
@@ -461,13 +467,14 @@ fn getColorAt(intersection_position: Vect_,
                 secondary_intersections.push(scene_objects[obj_idx].findIntersection(shadow_ray));
             }}
             
-            for c in 0..secondary_intersections.len(){
-                if secondary_intersections[c] > accuracy{
-                    if secondary_intersections[c] <= distance_to_light_magnitude{
+            for sec_inter_idx in 0..secondary_intersections.len(){
+                if secondary_intersections[sec_inter_idx] > accuracy{
+                    if secondary_intersections[sec_inter_idx] <= distance_to_light_magnitude{
                         shadowed = true;
                     }
                 break;
                 }
+                //break;
             }
             if shadowed == false {
                 final_color = final_color.colorAdd(winning_object_color.colorMultiply(light_sources[light_idx].color()).colorScalar(cos_angle) );
@@ -542,4 +549,6 @@ fn winningObjectIndex(object_intersections: Vec<f64>) -> i32{
     }
     
 }
+
+
 
