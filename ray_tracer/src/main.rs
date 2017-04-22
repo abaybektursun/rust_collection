@@ -12,62 +12,83 @@ struct RGB_ {         //
 }                     //
 //--------------------//
 
-//--------------------------//
-#[derive(Copy, Clone)]      //
-struct Color_ {             //
-    r: f64,                 //
-    g: f64,                 //
-    b: f64,                 //
-    special: f64            //
-}impl Color_ {              //
-    pub fn new() -> Color_ {//
-        Color_ {            //
-            r: 0.5,         //
-            g: 0.5,         //
-            b: 0.5,         //
-            special: 0.0    //
-        }                   //
-    }                       //
-    pub fn brightness(&self) -> f64{
-        return(self.g + self.r + self.b);
+//-------------------------------------------------------//
+#[derive(Copy, Clone)]                                   //
+struct Color_ {                                          //
+    r: f64,                                              //
+    g: f64,                                              //
+    b: f64,                                              //
+    special: f64                                         //
+}impl Color_ {                                           //
+    pub fn new() -> Color_ {                             //
+        Color_ {                                         //
+            r: 0.5,                                      //
+            g: 0.5,                                      //
+            b: 0.5,                                      //
+            special: 0.0                                 //
+        }                                                //
+    }                                                    //
+    pub fn brightness(&self) -> f64{                     //
+        return(self.g + self.r + self.b);                //
+    }                                                    //
+    pub fn colorScalar (&self,scalar: f64) -> Color_{    //
+        let r = self.r; let g = self.g; let b = self.b;  //
+        return Color_{r: r * scalar,                     //
+                      g: g * scalar,                     //
+                      b: b * scalar,                     //
+                      special: self.special};            //
+    }                                                    //
+    pub fn colorAdd(&self, color: Color_) -> Color_ {    //
+        let r = self.r; let g = self.g; let b = self.b;  //
+        return Color_{r: r + color.r,                    //
+                      g: g + color.g,                    //
+                      b: b + color.b,                    //
+                      special: self.special};            //
+    }                                                    //
+    pub fn colorMultiply(&self, color: Color_) -> Color_{//
+        let r = self.r; let g = self.g; let b = self.b;  //
+        return Color_{r: r * color.r,                    //
+                      g: g * color.g,                    //
+                      b: b * color.b,                    //
+                      special: self.special};            //
+    }                                                    //
+    pub fn colorAverage (&self, color: Color_) -> Color_{//
+        let r = self.r; let g = self.g; let b = self.b;  //
+        return Color_{r: (r + color.r)/2.0,              //
+                      g: (g + color.g)/2.0,              //
+                      b: (b + color.b)/2.0,              //
+                      special: self.special};            //
+    }                                                    //
+    pub fn clip (&mut self) -> Color_{
+        let mut r = self.r; let mut g = self.g; let mut b = self.b;
+        let alllight = r +g +b;
+        let exesslight = alllight -3.0;
+        if exesslight > 0.0 {
+            self.r = r + exesslight * (r/alllight);
+            self.g = g + exesslight * (g/alllight);
+            self.b = b + exesslight * (b/alllight);
+        }
+        r = self.r; g = self.g; b = self.b;
+        if r > 1.0{self.r = 1.0;}
+        if g > 1.0{self.g = 1.0;}
+        if b > 1.0{self.b = 1.0;}
+        
+        if r < 0.0{self.r = 0.0;}
+        if g > 0.0{self.g = 0.0;}
+        if b > 0.0{self.b = 0.0;}
+        
+        return Color_{r: self.r, g: self.g, b:self.b, special: self.special};
     }
-    pub fn colorScalar (&self,scalar: f64) -> Color_{
-        let r = self.r; let g = self.g; let b = self.b;
-        return Color_{r: r * scalar, 
-                      g: g * scalar, 
-                      b: b * scalar,
-                      special: self.special};
-    }
-    pub fn colorAdd(&self, color: Color_) -> Color_ {
-        let r = self.r; let g = self.g; let b = self.b;
-        return Color_{r: r + color.r,
-                      g: g + color.g, 
-                      b: b + color.b, 
-                      special: self.special};
-    }
-    pub fn colorMultiply(&self, color: Color_) -> Color_{
-        let r = self.r; let g = self.g; let b = self.b;
-        return Color_{r: r * color.r,
-                      g: g * color.g, 
-                      b: b * color.b, 
-                      special: self.special};
-    }
-    pub fn colorAverage (&self, color: Color_) -> Color_{
-        let r = self.r; let g = self.g; let b = self.b;
-        return Color_{r: (r + color.r)/2.0, 
-                      g: (g + color.g)/2.0, 
-                      b: (b + color.b)/2.0, 
-                      special: self.special};
-    }
-}                           //
-//--------------------------//
+}                                                        //
+//-------------------------------------------------------//
 
-trait Source_{
-    fn position(&self) -> Vect_;
-    fn color(&self) -> Color_;
-    fn new_(&self) -> Light_;
-}
-
+//------------------------------//
+trait Source_{                  //
+    fn position(&self) -> Vect_;//
+    fn color(&self) -> Color_;  //
+    fn new_(&self) -> Light_;   //
+}                               //
+//------------------------------//
 
 //------------------------------------------------------//
 #[derive(Copy, Clone)]                                  //
@@ -77,7 +98,7 @@ struct Light_{                                          //
 }impl Source_ for Light_{                               //
     fn position(&self) -> Vect_{return self.position}   //
     fn color(&self) -> Color_{return self.color}        //
-    fn new_(&self) -> Light_ {                                //
+    fn new_(&self) -> Light_ {                          //
         Light_ {                                        //
             position: Vect_{x:0.0, y:0.0, z:0.0},       //
             color: Color_{r:1.0,g:1.0,b:1.0,special:0.0}//
@@ -122,7 +143,7 @@ struct Vect_ {                                                                  
                       y: &self.y*val,                                                    //
                       z: &self.z*val};                                                   //
     }                                                                                    //
-    pub fn new_() -> Vect_ {                                                              //
+    pub fn new_() -> Vect_ {                                                             //
         Vect_ {                                                                          //
             x: 0.0,                                                                      //
             y: 0.0,                                                                      //
@@ -139,7 +160,7 @@ struct Ray_ {                                         //
     direction: Vect_,                                 //
 }impl Ray_ {                                          //
     //fn value(&self) -> &f64 { &self.x }             //
-    pub fn new_() -> Ray_ {                            //
+    pub fn new_() -> Ray_ {                           //
         Ray_ {                                        //
             origin:    Vect_ {x: 0.0, y: 0.0, z: 0.0},//
             direction: Vect_ {x: 1.0, y: 0.0, z: 0.0},//
@@ -158,7 +179,7 @@ struct Camera_ {                                  //
 }                                                 //
 impl Camera_ {                                    //
     //fn value(&self) -> &f64 { &self.x }         //
-    pub fn new_() -> Camera_ {                     //
+    pub fn new_() -> Camera_ {                    //
         Camera_ {                                 //
             pos:   Vect_ {x: 0.0, y: 0.0, z: 0.0},//
             dir:   Vect_ {x: 0.0, y: 0.0, z: 1.0},//
@@ -177,55 +198,57 @@ trait Object_ {                                  //
 }                                                //
 //-----------------------------------------------//
 
-//----------------------------------------------------------------------//
-#[derive(Copy, Clone)]                                                  //
-struct Sphere_{                                                         //
-    center: Vect_,                                                      //
-    radius: f64,                                                        //
-    color:  Color_,                                                     //
-} impl Object_ for Sphere_{                                             //                          
-    fn getNormalAt(&self, point: Vect_) -> Vect_{                       //                      
-        //Normal points away from the center of a sphere                //                            
-        return point.vectAdd(self.center.negative().normalize());       //                     
-    }                                                                   //    
-    fn findIntersection(&self,ray: Ray_) -> f64{                        //                         
-        let ray_origin = ray.origin;                                    //             
-        let ray_direction = ray.direction;                              //                   
-        let sphere_center = self.center;                                //                      
-                                                                        //       
-        let a = 1.0;                                                    //                   
-        let b = (2.0*(ray_origin.x - sphere_center.x)*ray_direction.x) +//                     
-                (2.0*(ray_origin.y - sphere_center.y)*ray_direction.y) +// 
-                (2.0*(ray_origin.z - sphere_center.z)*ray_direction.z); //                    
-        let c = (ray_origin.x - sphere_center.x).powf(2.0) +            // 
-                (ray_origin.y - sphere_center.y).powf(2.0) +            // 
-                (ray_origin.z - sphere_center.z).powf(2.0) -            //          
-                (self.radius*self.radius);                              //  
-        let discriminant = b*b - 4.0*c;                                 //   
-        if discriminant > 0.0 {
-            // Ray itersects the shere
-            
-            //The First root
-            let root_1 = (-1.0*b - discriminant.sqrt()/2.0) - 0.000001;
-            if root_1 > 0.0 {
-                // The first root is the smallest positive root
-                return root_1;
-            }
-            else {
-                let root_2 = ((discriminant.sqrt() - (b as f64))/2.0) - 0.0000001;
-                return root_2;
-            }
-        }
-        else {
-            // The ray does not intersect the sphere
-            return -1.0
-        } 
-    }
-    fn color(&self) -> Color_{
-         return self.color;
-    }                                                                   //    
-}                                                                       //
-//----------------------------------------------------------------------//
+//--------------------------------------------------------------------------------//
+#[derive(Copy, Clone)]                                                            //
+struct Sphere_{                                                                   //
+    center: Vect_,                                                                //
+    radius: f64,                                                                  //
+    color:  Color_,                                                               //
+} impl Object_ for Sphere_{                                                       //
+    fn getNormalAt(&self, point: Vect_) -> Vect_{                                 //
+        //Normal points away from the center of a sphere                          //
+        return point.vectAdd(self.center.negative().normalize());                 //
+    }                                                                             //
+    fn findIntersection(&self,ray: Ray_) -> f64{                                  //
+        let ray_origin = ray.origin;                                              //
+        let ray_direction = ray.direction;                                        //
+        let sphere_center = self.center;                                          //
+                                                                                  //
+        let a = 1.0;                                                              //
+        let b = (2.0*(ray_origin.x - sphere_center.x)*ray_direction.x) +          //
+                (2.0*(ray_origin.y - sphere_center.y)*ray_direction.y) +          //
+                (2.0*(ray_origin.z - sphere_center.z)*ray_direction.z);           //
+        let c = (ray_origin.x - sphere_center.x).powf(2.0) +                      //
+                (ray_origin.y - sphere_center.y).powf(2.0) +                      //
+                (ray_origin.z - sphere_center.z).powf(2.0) -                      //
+                (self.radius*self.radius);                                        //
+        let discriminant = b*b - 4.0*c;                                           //
+        if discriminant > 0.0 {                                                   //
+            // Ray itersects the shere                                            //
+                                                                                  //
+            //The First root                                                      //
+            let root_1 = (-1.0*b - discriminant.sqrt()/2.0) - 0.000001;           //
+            if root_1 > 0.0 {                                                     //
+                // The first root is the smallest positive root                   //
+                return root_1;                                                    //
+            }                                                                     //
+            else {                                                                //
+                let root_2 = ((discriminant.sqrt() - (b as f64))/2.0) - 0.0000001;//
+                return root_2;                                                    //
+            }                                                                     //
+        }                                                                         //
+        else {                                                                    //
+            // The ray does not intersect the sphere                              //
+            return -1.0                                                           //
+        }                                                                         //
+    }                                                                             //
+    fn color(&self) -> Color_{                                                    //
+         return self.color;                                                       //
+    }                                                                             //
+}                                                                                 //
+//--------------------------------------------------------------------------------//
+
+//---------------------------------------------------------------------------------------------------------
 #[derive(Copy, Clone)]
 struct Plane_{
     normal:   Vect_,
@@ -253,53 +276,8 @@ struct Plane_{
     fn color(&self) -> Color_{
          return self.color;
     }
-
 }
-
-fn winningObjectIndex(object_intersections: Vec<f64>) -> i32{
-    // Return the index of the winning intersection
-    let mut index_of_min_value: i32 = -1;
-    // Avoid useless comutaitons
-    if object_intersections.len() == 0 {
-        // If there are no interscetions
-        return -1;   
-    }
-    else if object_intersections.len() == 1{
-        if object_intersections[0] > 0.0{
-            // if that intersction is greater than 0 then its our index of min
-            return 0;
-        }
-        else{
-            // Otherwise the only intersction value is negative
-            return -1;
-        }
-    }
-    // Find the object closes to the camera
-    else {
-        // Find the max value in the vector
-        let mut max: f64 = 0.0;
-        for i in 0..object_intersections.len(){
-            if max < object_intersections[i] {
-                max = object_intersections[i];
-            }
-        }
-        // Starting from the maximum value find the minimum positive value
-        if max > 0.0 {
-            // We need positive intersections
-            for idx in 0..object_intersections.len(){
-                if object_intersections[idx] > 0.0 && object_intersections[idx] <= max {
-                    max = object_intersections[idx];
-                    index_of_min_value = idx as i32;
-                }
-            }
-            return index_of_min_value;
-        }
-        else {
-            return -1;
-        }
-    }
-    
-}
+//----------------------------------------------------------------------------------------------------------
 
 
 fn main() {
@@ -397,10 +375,19 @@ fn main() {
             let mut cam_ray = Ray_{origin: cam_ray_origin, direction: cam_ray_direction};
             
             let mut intersections = Vec::new();
-            let scene_objects_copy = scene_objects.clone();
+            // Rust Bug: https://github.com/rust-lang/rust/issues/26925
+            // Derive clone does not properly work
+            //let mut scene_objects_copy  = scene_objects.clone();
+            // Have to copy manually
+            //let mut scene_objects_copy: Vec<Box<Object_>> = Vec::new();
+            //for a_sc_obj in scene_objects{
+            //    scene_objects_copy.push(Box::(*a_sc_obj);
+            //}
+            
             for idx in 0..scene_objects.len(){
-                intersections.push(scene_objects_copy[idx as usize].findIntersection(cam_ray));
+                intersections.push(scene_objects[idx as usize].findIntersection(cam_ray));
             }
+            
             let intersections_copy = intersections.clone(); 
             let index_of_winning_object = winningObjectIndex(intersections_copy);
             //print!("{}", index_of_winning_object); 
@@ -417,7 +404,9 @@ fn main() {
                     let intersection_position = cam_ray_origin.vectAdd(cam_ray_direction.vectMult(intersections[index_of_winning_object as usize]));
                     let intersecting_ray_direction = cam_ray_direction;
 
-                    let a_color = getColorAt(intersection_position, intersecting_ray_direction, scene_objects, index_of_winning_object, light_sources, accuracy, ambientlight);
+                    let a_color = getColorAt(intersection_position, intersecting_ray_direction, 
+                                             &scene_objects, index_of_winning_object, 
+                                             &light_sources, accuracy, ambientlight);
 
                     image[this_pixel as usize].r = a_color.r;
                     image[this_pixel as usize].g = a_color.g;
@@ -441,9 +430,116 @@ fn main() {
 
 fn getColorAt(intersection_position: Vect_, 
               intersecting_ray_direction: Vect_, 
-              scene_objects: Vec<Box<Object_>>, 
+              scene_objects: &Vec<Box<Object_>>, 
               index_of_winning_object: i32, 
-              light_sources: Vec<Box<Source_>>, 
+              light_sources: &Vec<Box<Source_>>, 
               accuracy: f64, ambientlight: f64) -> Color_{
-    return Color_{r:0.0,g:0.0,b:0.0,special: 0.0};
+    
+    let mut winning_object_color  = scene_objects[index_of_winning_object as usize].color();
+    let mut winning_object_normal = scene_objects[index_of_winning_object as usize].getNormalAt(intersection_position);
+    
+    let mut final_color = winning_object_color.colorScalar(ambientlight);
+    
+    for light_idx in 0..light_sources.len(){
+        let light_direction = light_sources[light_idx].position().vectAdd(intersection_position.negative().normalize());
+        let cos_angle = winning_object_normal.dot(light_direction);
+        
+        if cos_angle > 0.0{
+            // Test for shadows
+            let mut shadowed = false;
+            
+            let distance_to_light = light_sources[light_idx as usize].position().vectAdd(intersection_position.negative()).normalize();
+            let distance_to_light_magnitude = distance_to_light.magnitude();
+            
+            let shadow_ray = Ray_{
+                origin: intersection_position, 
+                direction: light_sources[light_idx as usize].position().vectAdd(intersection_position.negative()).normalize()
+            };
+            let mut secondary_intersections: Vec<f64> = Vec::new();
+            
+            for obj_idx in 0..scene_objects.len() {if shadowed == false{
+                secondary_intersections.push(scene_objects[obj_idx].findIntersection(shadow_ray));
+            }}
+            
+            for c in 0..secondary_intersections.len(){
+                if secondary_intersections[c] > accuracy{
+                    if secondary_intersections[c] <= distance_to_light_magnitude{
+                        shadowed = true;
+                    }
+                break;
+                }
+            }
+            if shadowed == false {
+                final_color = final_color.colorAdd(winning_object_color.colorMultiply(light_sources[light_idx].color()).colorScalar(cos_angle) );
+                
+                if winning_object_color.special > 0.0 && winning_object_color.special <= 1.0{
+                    // Special 0,1
+                    let mut dot1    = winning_object_normal.dot(intersecting_ray_direction.negative());
+                    let mut scalar1 = winning_object_normal.vectMult(dot1);
+                    let mut add1    = scalar1.vectAdd(intersecting_ray_direction);
+                    let mut scalar2 = add1.vectMult(2.0);
+                    let mut add2    = intersecting_ray_direction.negative().vectAdd(scalar2);
+                    let mut reflection_direction = add2.normalize();
+                    
+                    let mut specular = reflection_direction.dot(light_direction);
+                    if specular > 0.0{
+                        specular = specular.powf(10.0);
+                        final_color = final_color.colorAdd(light_sources[light_idx].color().colorScalar(specular*winning_object_color.special));
+                    }
+                }
+            }
+            
+        
+        
+        }
+    }
+    return final_color.clip();
+
 }
+
+
+fn winningObjectIndex(object_intersections: Vec<f64>) -> i32{
+    // Return the index of the winning intersection
+    let mut index_of_min_value: i32 = -1;
+    // Avoid useless comutaitons
+    if object_intersections.len() == 0 {
+        // If there are no interscetions
+        return -1;   
+    }
+    else if object_intersections.len() == 1{
+        if object_intersections[0] > 0.0{
+            // if that intersection is greater than 0 then its our index of min
+            return 0;
+        }
+        else{
+            // Otherwise the only intersction value is negative
+            return -1;
+        }
+    }
+    // Find the object closes to the camera
+    else {
+        // Find the max value in the vector
+        let mut max: f64 = 0.0;
+        for i in 0..object_intersections.len(){
+            if max < object_intersections[i] {
+                max = object_intersections[i];
+            }
+        }
+        // Starting from the maximum value find the minimum positive value
+        if max > 0.0 {
+            // We need positive intersections
+            for idx in 0..object_intersections.len(){
+                if object_intersections[idx] > 0.0 && object_intersections[idx] <= max {
+                    max = object_intersections[idx];
+                    index_of_min_value = idx as i32;
+                }
+            }
+            return index_of_min_value;
+        }
+        else {
+            return -1;
+        }
+    }
+    
+}
+
