@@ -5,3 +5,4 @@ authors = ["Abay Bektursun <abaybektursun@gmail.com>"]
 
 [dependencies]
 image = "*"
+num_cpus = "*"

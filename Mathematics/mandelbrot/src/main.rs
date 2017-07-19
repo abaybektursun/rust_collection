@@ -1,5 +1,7 @@
 extern crate image;
+extern crate num_cpus;
 
+use std::thread;
 use std::fs::File;
 use std::path::Path;
 use image::GenericImage;
@@ -25,7 +27,7 @@ impl Complex{
     fn mul(&self, num: &Complex) -> Complex{
        Complex {
            real:    self.real * num.real + (-1.0 * self.lateral * num.lateral),
-           lateral: self.real * num.lateral + self.lateral * num.real  
+           lateral: self.real * num.lateral + self.lateral * num.real
        }
     }
     fn abs(&self) -> f64 {
@@ -33,23 +35,46 @@ impl Complex{
     }
 }
 
-fn main() 
+fn main()
 {
-    let zero = Complex {real: 0.0, lateral: -1.0};
-    mandelbrot(zero);
+    let CORES = num_cpus::get();
     
     // Square image
-    let RESOLUTION = 900;
-    let PLANE: f64 = 2.0;
+    const RESOLUTION: usize = 3000;
+    let PLANE: f64 = 1.0;
     let STEP       = 2.0 * PLANE/(RESOLUTION as f64);
 
-    let mut img = image::ImageBuffer::new(RESOLUTION, RESOLUTION);
-    for (x, y, pix) in img.enumerate_pixels_mut() {
-        let r = PLANE - STEP * (x as f64);
-        let i = PLANE - STEP * (y as f64);
-        let iters = mandelbrot(Complex{real: r, lateral: i});
-        
-        *pix = image::Luma([iters]);
+    let mut img = image::ImageBuffer::new(RESOLUTION as u32, RESOLUTION as u32);
+    
+    let mut workers = vec![];
+
+    let mut image_2D: [[u8; RESOLUTION]; RESOLUTION] = [[120; RESOLUTION]; RESOLUTION];
+    let work = (RESOLUTION)/CORES;
+    for i in 0..CORES {
+        workers.push(thread::spawn( move || {
+            let x_start = RESOLUTION - work * i - 1;
+            let y_start = RESOLUTION - work * i - 1;
+            let x_end   = RESOLUTION - work * (i + 1);
+            let y_end   = RESOLUTION - work * (i + 1);
+            println!("x_start:{} \t x_end:{}\n", x_start, x_end);
+            for x_ in x_start..x_end{
+                for y_ in y_start..y_end {
+                    let r = PLANE - STEP * (x_ as f64);
+                    let l = PLANE - STEP * (y_ as f64);
+                    image_2D[x_][y_] = mandelbrot( Complex{real: r, lateral: l} );
+                }
+            }
+        }
+        ));
+        workers.push(thread::spawn( || {
+            println!("My NaMe IS jeFF");
+        }));
+    }
+
+    for a_worker in workers { a_worker.join(); }
+
+    for (x_, y_, pix) in img.enumerate_pixels_mut() {
+        *pix = image::Luma([image_2D[x_ as usize][y_ as usize]]);
     }
     let ref mut img_file = File::create(&Path::new("mandel.png")).unwrap();
     image::ImageLuma8(img).save(img_file, image::PNG);
@@ -57,11 +82,9 @@ fn main()
 
 fn mandelbrot(num: Complex) -> u8 {
     let mut z = num;
-    //let mut mult = z;
     let mut iters: u8 = 0;
     for n in 1..255 {
         if z.abs() > 2.0 { break; }
-        //mult = z.mul(&z);
         z = (z.mul(&z) as Complex).add(&num);
         iters = n;
     }
