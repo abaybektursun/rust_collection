@@ -38,6 +38,7 @@ impl Complex{
 fn main()
 {
     let CORES = num_cpus::get();
+    println!("Number of cores: {}", CORES);
     
     // Square image
     const RESOLUTION: usize = 3000;
@@ -48,10 +49,16 @@ fn main()
     
     let mut workers = vec![];
 
-    let mut image_2D: [[u8; RESOLUTION]; RESOLUTION] = [[120; RESOLUTION]; RESOLUTION];
+    //let mut image_2D: [[u8; RESOLUTION]; RESOLUTION] = [[120; RESOLUTION]; RESOLUTION];
+    let mut image_2D_raw = vec![163; RESOLUTION * RESOLUTION];
+    let mut image_2D_base: Vec<_> = image_2D_raw.as_mut_slice().chunks_mut(RESOLUTION).collect();
+    let mut image_2D: &mut [&mut [_]] = image_2D_base.as_mut_slice();
+
+
     let work = (RESOLUTION)/CORES;
     for i in 0..CORES {
         workers.push(thread::spawn( move || {
+            image_2D_raw; image_2D_base;
             let x_start = RESOLUTION - work * i - 1;
             let y_start = RESOLUTION - work * i - 1;
             let x_end   = RESOLUTION - work * (i + 1);
